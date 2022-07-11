@@ -1,0 +1,7 @@
+pyproj
+rtree
+shapely
+geopandas
+opencv-python
+notebook
+tqdm
