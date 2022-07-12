@@ -28,8 +28,8 @@ def stack_bands(image_paths, out_file):
     # Read all the individual bands
     try:
         srcs = [rasterio.open(image_path) for image_path in image_paths]
-    except:
-        raise ValueError("Invalid image paths. Please check the band paths again.")
+    except Exception as e:
+        raise ValueError(e)
     
     # Check if the x and y are same for all the bands or not
     xy = np.array([(src.height, src.width) for src in srcs])
@@ -63,7 +63,7 @@ def stack_bands(image_paths, out_file):
     return None 
 
 
-def reproject_raster(src_image_path, dst_image_path,
+def reproject_raster(src_image_path, dst_image_path, band=None,
                      dst_crs='EPSG:4326'):
     
     with rasterio.open(src_image_path) as src:
@@ -78,15 +78,28 @@ def reproject_raster(src_image_path, dst_image_path,
             'height': height
         })
         
-        with rasterio.open(dst_image_path, 'w', **kwargs) as dst:
-            for i in range(1, src.count+1):
+        if band is None:
+            with rasterio.open(dst_image_path, 'w', **kwargs) as dst:
+                for i in range(1, src.count+1):
+                    reproject(
+                        source=rasterio.band(src, i),
+                        destination=rasterio.band(dst, i),
+                        src_transform=src.transform,
+                        src_crs=src.crs,
+                        dst_transform=transform,
+                        dst_crs=dst_crs,
+                        resampling=Resampling.nearest
+                    )
+        else:
+            with rasterio.open(dst_image_path, 'w', **kwargs) as dst:
                 reproject(
-                    source=rasterio.band(src, i),
-                    destination=rasterio.band(dst, i),
+                    source=rasterio.band(src, band+1),
+                    destination=rasterio.band(dst, band+1),
                     src_transform=src.transform,
                     src_crs=src.crs,
                     dst_transform=transform,
                     dst_crs=dst_crs,
                     resampling=Resampling.nearest
                 )
+    
     return None
