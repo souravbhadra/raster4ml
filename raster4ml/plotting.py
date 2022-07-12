@@ -1,61 +1,50 @@
 import os
 import rasterio
 import folium
+import ipyleaflet
+import rioxarray
+import geopandas as gpd
 import numpy as np
 import numpy.ma as ma
 from pyproj import Transformer
-
-def plot_raster(image_path, bands=[1, 2, 3], **kwargs):
-    
-    src = rasterio.open(image_path)
-    img = src.read()
-    img = np.moveaxis(img, 0, 2) # Move channel to the last axis
-    
-    if isinstance(bands, list):
-        if len(bands) != 3:
-            raise ValueError("Insert only 3 integers representing the image channels.")
-        else:
-            img_type = 'multispectral'
-    elif isinstance(bands, int):
-        img_type = 'single_band'
-    else:
-        raise ValueError("The bands should be either an integer or list of three integers.")
-    
-    # Select the bands
-    img = img[:, :, bands]
-    
-    # Convert data to float
-    img = img.astype(np.float32)
-    
-    # Handle nodata
-    if src.nodata is None:
-        img[img==0.0] = np.nan
-    else:
-        img[img==src.nodata] = np.nan
-        
-    # Scale
-    max_ = np.nanmax(img)
-    min_ = np.nanmin(img)
-    img = ((img-min_)/(max_-min_)*255).astype(np.uint8)
-    
-    _, ax = plt.subplots(**kwargs)
-    
-    ax.imshow(img)
-    ax.set
-    
-    src.close()
-    
-    return img
-
+import matplotlib.pyplot as plt
 
 class Map(folium.folium.Map):
     
-    def __init__(self):
-        super().__init__()
-        
+    """A Folium map objecto to make an interactive map.
+
+    Attributes
+    ----------
+    kwargs : dict
+        Keywords arguments of folium.folum.Map.
+
+    Methods
+    -------
+    add_raster(image_path, bands, layer_control=True):
+        Add a raster data to the map. Note: layer_control must be False if another feature
+        is to be added later. It should be True, if this is the only or last feature to
+        add.
+    """
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
         
     def convert_bound_crs(self, src_crs, bound):
+        """Convert the bound from any CRS to WGS 1984 CRS.
+
+        Parameters
+        ----------
+        src_crs : int
+            The source CRS from EPSG.
+        bound : list
+            The bound in [[min_lat, min_lon], [max_lat, max_lon]].
+
+        Returns
+        -------
+        list
+            The converted bound in WGS format.
+        """ 
         
         bound_wgs = []
         
@@ -69,9 +58,48 @@ class Map(folium.folium.Map):
             bound_wgs.append([lat_x, lon_x])
             
         return bound_wgs
+    
+    
+    def colorize_band(self, array, cmap='viridis'):
+        """Colorize a single band to a RGBA image.
+
+        Parameters
+        ----------
+        array : numpy nd-array
+            The array of the band.
+        cmap : str
+            The colormap to be drawn, supports matplotlib cmas, default to 'viridis'.
+
+        Returns
+        -------
+        numpy nd-array
+            A colorized 4-band RGBA array.
+        """ 
+        normed_data = (array - array.min()) / (array.max() - array.min())    
+        cm = plt.cm.get_cmap(cmap)    
+        return cm(normed_data)
         
         
-    def add_raster(self, image_path, bands):
+    def add_raster(self, image_path, bands=None, layer_control=True):
+        """Add a raster data into the map.
+
+        Parameters
+        ----------
+        image_path : str
+            The path of the image.
+        bands : list of int
+            If multispectral, then provide the three bands to use as RGB, Defaults to 
+            [3, 2, 1]. If single band image, Defaults to the first band (bands = 0). If
+            int is given, then only one bands will be drawn.
+        layer_control : bool
+            If True, then the layer control will be provided on the map. It should be 
+            False if another feature is to be drawn after this feature draw. Defaults to
+            True.
+
+        Returns
+        -------
+        None
+        """ 
         
         src = rasterio.open(image_path)
         src_crs = src.crs.to_epsg()
@@ -85,6 +113,16 @@ class Map(folium.folium.Map):
         # Get center lat lon
         #cen_lat, cen_lon = np.mean(np.array(bound), axis=0)
         
+        if src.count > 1:
+            image_type = 'multi'
+        
+        # Check band
+        if image_type == 'multi':
+            if bands is None:
+                bands = [3, 2, 1]
+        else:
+            bands = 0
+        
         # Read src as images
         img = src.read()
         img = np.moveaxis(img, 0, 2)
@@ -92,23 +130,64 @@ class Map(folium.folium.Map):
         img = img.astype(np.float32)
         img[img==0.0] = np.nan
         img = ma.masked_invalid(img)
-        img_norm = (img - img.min()) / (img.max() - img.min())
-        img_norm = ma.filled(img_norm, fill_value=0.0)
-        mask = ma.getmask(img)
-        mask = mask * 1
-        mask = mask[:, :, 0]
-        mask = np.abs(mask-1)
         
         # Create a RGBA image
-        img_rgba = np.zeros(shape=(img.shape[0], img.shape[1], 4))
-        img_rgba[:, :, :3] = img_norm
-        img_rgba[:, :, 3] = mask
+        if image_type == 'multi':
+            img_norm = (img - img.min()) / (img.max() - img.min())
+            img_norm = ma.filled(img_norm, fill_value=0.0)
+            mask = ma.getmask(img)
+            mask = mask * 1
+            mask = mask[:, :, 0]
+            mask = np.abs(mask-1)
+            img_rgba = np.zeros(shape=(img.shape[0], img.shape[1], 4))
+            img_rgba[:, :, :3] = img_norm
+            img_rgba[:, :, 3] = mask
+        else:
+            img_rgba = self.colorize_band(img)
         
         folium.raster_layers.ImageOverlay(
-            name=os.path.basename(image_path).split('.')[0],
+            name=os.path.basename(image_path),
             image=img_rgba,
             bounds=bound,
             interactive=True,
         ).add_to(self)
-        folium.LayerControl().add_to(self)
         self.fit_bounds(bound)
+        if layer_control:
+            folium.LayerControl().add_to(self)
+        
+        
+    def add_shape(self, shape_path, layer_control=True):
+        """Add a shapefile data into the map.
+
+        Parameters
+        ----------
+        shape_path : str
+            The path of the shapefile.
+        layer_control : bool
+            If True, then the layer control will be provided on the map. It should be 
+            False if another feature is to be drawn after this feature draw. Defaults to
+            True.
+
+        Returns
+        -------
+        None
+        """ 
+        
+        shape = gpd.read_file(shape_path)
+        
+        if shape.crs.to_epsg() != 4326:
+            shape = shape.to_crs(epsg=4326)
+        
+        shape_json = shape.to_json()
+        folium.features.GeoJson(
+            data=shape_json,
+            name=os.path.basename(shape_path)
+        ).add_to(self)
+        
+        min_lon, min_lat, max_lon, max_lat = shape.total_bounds
+        bound = [[min_lat, min_lon], [max_lat, max_lon]]
+        self.fit_bounds(bound)
+        
+        if layer_control:
+            folium.LayerControl().add_to(self)
+        
