@@ -27,6 +27,7 @@ class Map(folium.folium.Map):
     """
     
     def __init__(self, **kwargs):
+        
         super().__init__(**kwargs)
         
         
@@ -80,7 +81,7 @@ class Map(folium.folium.Map):
         return cm(normed_data)
         
         
-    def add_raster(self, image_path, bands=None, layer_control=True):
+    def add_raster(self, image_path, bands=None, layer_control=False):
         """Add a raster data into the map.
 
         Parameters
@@ -113,11 +114,8 @@ class Map(folium.folium.Map):
         # Get center lat lon
         #cen_lat, cen_lon = np.mean(np.array(bound), axis=0)
         
-        if src.count > 1:
-            image_type = 'multi'
-        
         # Check band
-        if image_type == 'multi':
+        if src.count > 1: # If multi-band
             if bands is None:
                 bands = [3, 2, 1]
         else:
@@ -132,7 +130,7 @@ class Map(folium.folium.Map):
         img = ma.masked_invalid(img)
         
         # Create a RGBA image
-        if image_type == 'multi':
+        if src.count > 1:
             img_norm = (img - img.min()) / (img.max() - img.min())
             img_norm = ma.filled(img_norm, fill_value=0.0)
             mask = ma.getmask(img)
@@ -156,7 +154,7 @@ class Map(folium.folium.Map):
             folium.LayerControl().add_to(self)
         
         
-    def add_shape(self, shape_path, layer_control=True):
+    def add_shape(self, shape_path, layer_control=False):
         """Add a shapefile data into the map.
 
         Parameters

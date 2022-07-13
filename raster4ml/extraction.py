@@ -69,6 +69,26 @@ def extract_values_by_points(image_path, shape_path, unique_id):
     return pixel_values
 
 
+def get_duplicated_columns(df):
+    """Get the columns which has values all the same.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+        The pandas dataframe to check.   
+
+    Returns
+    -------
+    list
+        Lis of columns that needs to be removed.
+    """    
+    df = df.fillna(1, axis=1) # Replace all nans with 1
+    duplicates = []
+    for col in df.columns:
+        if (df[col] == df[col][0]).all():
+            duplicates.append(col)
+    return duplicates
+
 def batch_extract_values_by_points(image_paths, shape_path, unique_id):
     """Batch extract values from a set of raster data using point
     shapefile.
@@ -90,6 +110,12 @@ def batch_extract_values_by_points(image_paths, shape_path, unique_id):
         pixel_values = extract_values_by_points(image_path, shape_path, unique_id)
         pixel_values_df.append(pixel_values)
     pixel_values_df = pd.concat(pixel_values_df, axis=1)
+    
+    # Check if there are duplicate columns
+    cols_to_remove = get_duplicated_columns(pixel_values_df)
+    if len(cols_to_remove) > 0:
+        pixel_values_df = pixel_values_df.drop(columns=cols_to_remove)
+        print(f'{len(cols_to_remove)} columns were removed from the dataframe as they had duplicated values.')
     return pixel_values_df
 
 
@@ -226,6 +252,11 @@ def batch_extract_values_by_polygons(image_paths, *args):
         stats_df.append(stats)
     stats_df = pd.concat(stats_df, axis=1)
 
+    # Check if there are duplicate columns
+    cols_to_remove = get_duplicated_columns(stats_df)
+    if len(cols_to_remove) > 0:
+        stats_df = stats_df.drop(columns=cols_to_remove)
+        print(f'{len(cols_to_remove)} columns were removed from the dataframe as they had duplicated values.')
     return stats_df
 
 
