@@ -27,7 +27,7 @@ When geospatial raster data is concerned in a machine learning pipeline, it is o
     m.add_raster(image_path='Landsat8.tif', bands=[4, 3, 2])
     ```
     Output:
-    ![map-output](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/images/map-output.png)
+    ![map-output](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/images/map_output.png)
 
 # How to Install?
 ## Dependencies
