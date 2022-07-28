@@ -4,6 +4,9 @@ import numpy as np
 import rasterio
 from . import utils
 
+import warnings
+warnings.filterwarnings("ignore")
+
 class VegetationIndices():
     
     """Calculate vegetation indices from a given multispectral image.
@@ -3740,7 +3743,7 @@ class VegetationIndices():
                                   driver='GTiff', dtype='float32', nodata=0, count=1)
             except Exception as e:
                 not_calculated_features.append(feature)
-                print(e)
+                #print(e)
                 pass
         if len(not_calculated_features) > 0:
             print(f'{len(not_calculated_features)} features could not be calculated.')
