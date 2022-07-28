@@ -3497,7 +3497,7 @@ class VegetationIndices():
         numpy 2d-array
             SBI
         """
-        return 0.3037*self.(R520)+0.2793*self.R(600)+0.4743*self.R(690)+0.5585*self.R(900)+0.5082*self.R(1750)+0.1863*self.R(2350)
+        return 0.3037*self.R(520)+0.2793*self.R(600)+0.4743*self.R(690)+0.5585*self.R(900)+0.5082*self.R(1750)+0.1863*self.R(2350)
     
     def GVIMSS(self):
         """Tasselled Cap - Green Vegetation Index MSS

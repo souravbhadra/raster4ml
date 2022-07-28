@@ -4,7 +4,7 @@ data/worldview/*
 
 .vscode
 
-raster4ml/__pycache__/*
+raster4ml/__pycache__
 
 build/
 dist/
