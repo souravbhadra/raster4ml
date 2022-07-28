@@ -2,6 +2,8 @@ data/landsat/*
 data/sentinel/*
 data/worldview/*
 
+examples/.ipynb_checkpoints
+
 .vscode
 
 raster4ml/__pycache__
