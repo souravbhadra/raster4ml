@@ -5,3 +5,5 @@ data/worldview/*
 .vscode
 
 __pycache__/
+
+raster4ml/dummy.py
