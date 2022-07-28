@@ -5,3 +5,8 @@ data/worldview/*
 .vscode
 
 raster4ml/__pycache__/*
+
+build/
+dist/
+*.egg-info
+

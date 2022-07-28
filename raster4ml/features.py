@@ -31,14 +31,7 @@ class VegetationIndices():
     calculate(out_dir, featuers='all'):
         Calculate all the vegetation indices possible.
         Allowed list of features are:
-        'ARI_1', 'ARI_2', 'ARVI', 'CRI_1', 'CRI_2', 'DVI', 'EVI',
-        'GEMI', 'GARI', 'GCI', 'GDVI', 'GLI', 'GNDVI', 'GOSAVI',
-        'GRVI', 'GSAVI', 'GVI', 'IPVI', 'LCAI', 'MCARI', 'MNLI',
-        'MNDWI', 'MRENDVI', 'MRESR', 'MSR', 'MSAVI_2', 'MTVI', 'MSI',
-        'NLI', 'NBR', 'NBRT_1', 'NDBI', 'NDII', 'NDLI', 'NDMI', 
-        'NDNI', 'NDSI', 'NDVI', 'NDWI', 'NMDI', 'OSAVI', 'PRI',
-        'PSRI', 'RENDVI', 'RDVI', 'SR_1', 'SAVI', 'SIPI', 'TCARI',
-        'TDVI', 'TVI', 'VARI', 'VREI_1', 'VREI_2', 'WBI', 'WDRVI'
+        
 
     Raises
     ------
