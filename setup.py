@@ -6,7 +6,7 @@ def read(fname):
 
 setup(
     name="raster4ml",
-    version="0.1.0",
+    version="0.1.1",
     author="Sourav Bhadra",
     author_email='sbhadra019@gmail.com',
     description="A geospatial raster processing library for machine learning",

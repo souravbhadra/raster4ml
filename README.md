@@ -3,10 +3,31 @@
 When geospatial raster data is concerned in a machine learning pipeline, it is often required to extract meaningful features, such as vegetation indices (e.g., NDVI, EVI, NDRE, etc.) or textures. This package provides easy-to-use functions that can automatically calculates the features with one or several lines of codes in Python. It also has the functionality of extracting statistics based on shapefile (i.e., point or polygon) from a raster data. Any type of raster data is supported regardless of satellite or UAVs.
 
 # Key Features
-- **Stacking Bands:** Stack or combine bands together to form a multiband raster data.
-- **Calculate Features:** Automatically calculate necessary vegetation indices without providing any formula. Currently the package support 56 vegetation indices. (More will come)
-- **Extract raster values based on shapefile:** Extract pixel values of a given image by a point shapefile or statistics from a given polygon. Also has batch-wise processign support for multiple images.
-- **Clip raster based on polygon:** Clip a raster image based on the shape of given polygon file.
+- **Stack raster bands**
+- **Automatically calculate vegetation indices (supports 350+ indices)**
+- **Extract raster values based on shapefile**
+- **Clip raster based on polygon**
+
+# How to Use?
+1. Stacking bands
+    ```
+    stack_bands(image_paths=['Band_1.tif', 'Band_2.tif', 'Band_3.tif',
+                             'Band_4.tif', 'Band_5.tif', 'Band_6.tif'],
+                out_file='Stack.tif')
+    ```
+2. Vegetation index calculation
+    ```
+    VI = VegetationIndices(image_path='Landsat8.tif',
+                           wavelengths=[442.96, 482.04, 561.41, 654.59, 864.67, 1608.86, 2200.73])
+    VI.calculate(out_dir='vegetation_indices')
+    ```
+2. Dynamic visualization in Jupyter Notebook
+    ```
+    m = Map()
+    m.add_raster(image_path='Landsat8.tif', bands=[4, 3, 2])
+    ```
+    Output:
+    ![map-output](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/images/map_output.png)
 
 # How to Install?
 ## Dependencies
