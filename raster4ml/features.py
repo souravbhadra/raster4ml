@@ -46,7 +46,7 @@ class VegetationIndices():
         If invalid image path is given.
     """
     
-    def __init__(self, image_path, wavelengths, bit_depth):
+    def __init__(self, image_path, wavelengths, bit_depth=None):
         """Constructs all the necessary attributes for the 
         VegetationIndices object.
 

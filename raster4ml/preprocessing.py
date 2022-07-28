@@ -65,7 +65,24 @@ def stack_bands(image_paths, out_file):
 
 def reproject_raster(src_image_path, dst_image_path, band=None,
                      dst_crs='EPSG:4326'):
-    
+    """Reproject the raster into a different CRS.
+
+    Parameters
+    ----------
+    src_image_path : str
+        Path of the image to be reprojected.
+    dst_image_path : src
+        Path of the destination image as reprojected.
+    band : int, (Optional)
+        Specify the band to reproject.
+    dst_crs : str
+        The destination CRS in EPSG code. For example, 'EPSG:4326', Default to 'EPSG:4326'
+
+    Returns
+    -------
+    None
+        Nothing returns, the image is saved.
+    """
     with rasterio.open(src_image_path) as src:
         transform, width, height = calculate_default_transform(
             src.crs, dst_crs, src.width, src.height, *src.bounds
