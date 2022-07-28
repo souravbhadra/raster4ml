@@ -2,7 +2,7 @@ data/landsat/*
 data/sentinel/*
 data/worldview/*
 
-.vscode/
+.vscode/*
 
 __pycache__/
 
