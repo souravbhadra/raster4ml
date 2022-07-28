@@ -4,4 +4,4 @@ data/worldview/*
 
 .vscode
 
-raster4ml/__pycache__
+__pycache__/
