@@ -2,4 +2,6 @@ data/landsat/*
 data/sentinel/*
 data/worldview/*
 
+.vscode
+
 raster4ml/__pycache__
