@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Key Features &mdash; raster4ml 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> raster4ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="raster4ml.html">Raster4ML API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">raster4ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Key Features</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <figure class="align-default">
+<img alt="raster4ml-logo" src="https://raw.githubusercontent.com/souravbhadra/raster4ml/master/images/raster4ml_logo.png" />
+</figure>
+<p>When geospatial raster data is concerned in a machine learning pipeline,
+it is often required to extract meaningful features, such as vegetation
+indices (e.g., NDVI, EVI, NDRE, etc.) or textures. This package provides
+easy-to-use functions that can automatically calculates the features
+with one or several lines of codes in Python. It also has the
+functionality of extracting statistics based on shapefile (i.e., point
+or polygon) from a raster data. Any type of raster data is supported
+regardless of satellite or UAVs.</p>
+<section id="key-features">
+<h1>Key Features<a class="headerlink" href="#key-features" title="Permalink to this heading"></a></h1>
+<ul class="simple">
+<li><p><strong>Stacking Bands:</strong> Stack or combine bands together to form a
+multiband raster data.</p></li>
+<li><p><strong>Calculate Features:</strong> Automatically calculate necessary vegetation
+indices without providing any formula. Currently the package support
+56 vegetation indices. (More will come)</p></li>
+<li><p><strong>Extract raster values based on shapefile:</strong> Extract pixel values of
+a given image by a point shapefile or statistics from a given
+polygon. Also has batch-wise processign support for multiple images.</p></li>
+<li><p><strong>Clip raster based on polygon:</strong> Clip a raster image based on the
+shape of given polygon file.</p></li>
+</ul>
+</section>
+<section id="how-to-install">
+<h1>How to Install?<a class="headerlink" href="#how-to-install" title="Permalink to this heading"></a></h1>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading"></a></h2>
+<p><strong>Raster4ML</strong> is built on top of
+<a class="reference external" href="https://geopandas.org/en/stable/">geopandas</a>,
+<a class="reference external" href="https://rasterio.readthedocs.io/en/latest/">rasterio</a>,
+<a class="reference external" href="https://github.com/Toblerity/Fiona">fiona</a>,
+<a class="reference external" href="https://pyproj4.github.io/pyproj/stable/">pyproj</a>,
+<a class="reference external" href="https://github.com/Toblerity/rtree">rtree</a>,
+<a class="reference external" href="https://shapely.readthedocs.io/en/stable/manual.html">shapely</a>,
+<a class="reference external" href="https://numpy.org/">numpy</a>, and
+<a class="reference external" href="https://pandas.pydata.org/">pandas</a>.</p>
+</section>
+<section id="virtual-environment">
+<h2>Virtual Environment<a class="headerlink" href="#virtual-environment" title="Permalink to this heading"></a></h2>
+<p>It is prefered to use a virtual environment for working with this
+package. Use <a class="reference external" href="https://www.anaconda.com/">Anaconda</a> or
+<a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a> to create
+a seperate environment and then install the package and its dependencies
+there.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">raster4ml</span> <span class="n">python</span><span class="o">=</span><span class="mi">3</span>
+<span class="n">conda</span> <span class="n">activate</span> <span class="n">raster4ml</span>
+</pre></div>
+</div>
+</section>
+<section id="windows">
+<h2>Windows<a class="headerlink" href="#windows" title="Permalink to this heading"></a></h2>
+<p>To install on Windows, first download the wheel files for <strong>GDAL</strong>,
+<strong>rasterio</strong>, and <strong>fiona</strong> from <a class="reference external" href="https://www.lfd.uci.edu/~gohlke/pythonlibs/">Christoph Gohlke’s
+website</a> (🤗Thanks
+Christoph🤗). Go to his website, press Ctrl+F and type gdal. Download the
+GDAL file that mostly matches your computer configuration (64-bit or
+32-bit) and Python version.</p>
+<p>After downloading it, cd into the downloaded directory while the
+raster4ml environment is activated. Then install using pip. Do the same
+for <strong>rasterio</strong> and <strong>fiona</strong>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>pip install GDAL‑3.4.3‑cp310‑cp310‑win_amd64.whl
+pip install rasterio‑1.2.10‑cp310‑cp310‑win_amd64.whl
+pip install Fiona‑1.8.21‑cp310‑cp310‑win_amd64.whl
+</pre></div>
+</div>
+<p>If these three are installed, the rest of the dependencies can be
+installed directly through <strong>Raster4ML</strong>’s pip distribution.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">raster4ml</span>
+</pre></div>
+</div>
+</section>
+<section id="mac-os">
+<h2>Mac OS<a class="headerlink" href="#mac-os" title="Permalink to this heading"></a></h2>
+<p>Has not been tested yet. 😕</p>
+</section>
+<section id="linux">
+<h2>Linux<a class="headerlink" href="#linux" title="Permalink to this heading"></a></h2>
+<p>Has not been tested yet. 😕</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Sourav Bhadra.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

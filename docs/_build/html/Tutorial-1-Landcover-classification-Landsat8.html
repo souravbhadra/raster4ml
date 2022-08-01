@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial 1: Landcover Classification using Landsat 8 &mdash; raster4ml 0.0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> raster4ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="raster4ml.html">Raster4ML API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">raster4ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Tutorial 1: Landcover Classification using Landsat 8</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Tutorial-1-Landcover-classification-Landsat8.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-1-landcover-classification-using-landsat-8">
+<h1>Tutorial 1: Landcover Classification using Landsat 8<a class="headerlink" href="#tutorial-1-landcover-classification-using-landsat-8" title="Permalink to this heading"></a></h1>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;F:\raster4ml&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">from</span> <span class="nn">raster4ml.preprocessing</span> <span class="kn">import</span> <span class="n">stack_bands</span>
+<span class="kn">from</span> <span class="nn">raster4ml.plotting</span> <span class="kn">import</span> <span class="n">Map</span>
+<span class="kn">from</span> <span class="nn">raster4ml.features</span> <span class="kn">import</span> <span class="n">VegetationIndices</span>
+<span class="kn">from</span> <span class="nn">raster4ml.extraction</span> <span class="kn">import</span> <span class="n">batch_extract_values_by_points</span>
+</pre></div>
+</div>
+<section id="stack-the-bands">
+<h2>1. Stack the Bands<a class="headerlink" href="#stack-the-bands" title="Permalink to this heading"></a></h2>
+<p>First we need to stack all the bands together and make a multispectral
+image file. The mutispectral image will contain several channels/bands
+representing reflectance information from different wavelengths. Since
+the test dataset is downloaded from a Landsat 8 satellite, there are
+total 11 bands. However, we will only use the first 7 bands as they can
+accurately define most of the surface objects in terms of reflectance.</p>
+<p>To stack the seperate bands into one image, we need to define the paths
+of all the bands in chronological order (actually any order you want,
+but remember the orders for future reference).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Filter all the files that ends with .TIF</span>
+<span class="n">image_dir</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1&#39;</span>
+
+<span class="c1"># Empty list to hold the first 7 bands&#39; paths</span>
+<span class="n">bands_to_stack</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="c1"># Loop through 7 times</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+    <span class="n">bands_to_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">image_dir</span><span class="p">,</span>
+                                       <span class="sa">f</span><span class="s1">&#39;LC08_L1TP_137045_20210317_20210328_01_T1_B</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">.TIF&#39;</span><span class="p">))</span>
+<span class="n">bands_to_stack</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the stack_bands function from raster4ml to do the stacking</span>
+<span class="n">stack_bands</span><span class="p">(</span><span class="n">image_paths</span><span class="o">=</span><span class="n">bands_to_stack</span><span class="p">,</span>
+            <span class="n">out_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">image_dir</span><span class="p">,</span> <span class="s1">&#39;Stack.tif&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Let’s visualize the image usign the plotting functionality of raster4ml.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the map instance</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">Map</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add the raster to the map</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_raster</span><span class="p">(</span><span class="n">image_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">image_dir</span><span class="p">,</span> <span class="s1">&#39;Stack.tif&#39;</span><span class="p">),</span> <span class="n">bands</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m</span>
+</pre></div>
+</div>
+</section>
+<section id="calculate-vegetation-indices">
+<h2>2. Calculate Vegetation Indices<a class="headerlink" href="#calculate-vegetation-indices" title="Permalink to this heading"></a></h2>
+<p>In next step, we need to calculate the vegetation indices from the
+stacked image. We can do this using
+<code class="docutils literal notranslate"><span class="pre">raster4ml.features.VegetationIndices</span></code> object. You can provide a list
+of vegetation index we need to calculate in the object, but the tool can
+automatically calcualte all the possible vegetation index rasters.</p>
+<p>To do this, we need to provide the path of the stacked image, the
+corresponding wavelength values and an output directory to save all the
+indices as rasters. Since this is a Landsat 8 OLI image, we know the
+band wavelengths. The wavelengths can be inserted as either the
+<code class="docutils literal notranslate"><span class="pre">center_wavelengths</span></code> as list or the range of wavelengths per band in a
+list of list. The wavelengths has to be specified in nanometers (nm).
+The Landsat 8 OLI wavelengths can be seen
+<a class="reference external" href="https://www.usgs.gov/faqs/what-are-band-designations-landsat-satellites">here</a>.</p>
+<p>*Optionally we can provide the <code class="docutils literal notranslate"><span class="pre">bit_depth</span></code> as a parameter. Since we
+know Landsat 8 data is a 12-bit data, we can provide this information to
+normalize the image values from 0 to 1.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the VegetationIndices object</span>
+<span class="n">VI</span> <span class="o">=</span> <span class="n">VegetationIndices</span><span class="p">(</span><span class="n">image_path</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\Stack.tif&#39;</span><span class="p">,</span>
+                       <span class="n">wavelengths</span><span class="o">=</span><span class="p">[[</span><span class="mi">430</span><span class="p">,</span> <span class="mi">450</span><span class="p">],</span> <span class="p">[</span><span class="mi">450</span><span class="p">,</span> <span class="mi">510</span><span class="p">],</span> <span class="p">[</span><span class="mi">530</span><span class="p">,</span> <span class="mi">590</span><span class="p">],</span> <span class="p">[</span><span class="mi">640</span><span class="p">,</span> <span class="mi">670</span><span class="p">],</span> <span class="p">[</span><span class="mi">850</span><span class="p">,</span> <span class="mi">880</span><span class="p">],</span> <span class="p">[</span><span class="mi">1570</span><span class="p">,</span> <span class="mi">1650</span><span class="p">],</span> <span class="p">[</span><span class="mi">2110</span><span class="p">,</span> <span class="mi">2290</span><span class="p">]],</span>
+                       <span class="n">bit_depth</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run the process while providing the output directory</span>
+<span class="n">VI</span><span class="o">.</span><span class="n">calculate</span><span class="p">(</span><span class="n">out_dir</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Visualize any one of the index to see if the result is ok or not.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add the raster to the map</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_raster</span><span class="p">(</span><span class="n">image_path</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\NDVI.tif&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m</span>
+</pre></div>
+</div>
+</section>
+<section id="extract-values-based-on-sample-points">
+<h2>3. Extract Values based on Sample Points<a class="headerlink" href="#extract-values-based-on-sample-points" title="Permalink to this heading"></a></h2>
+<p>Locate the sample point shapefile in the <code class="docutils literal notranslate"><span class="pre">data/shapes</span></code> folder. The
+name of the shapefile is <code class="docutils literal notranslate"><span class="pre">points.shp</span></code>. We need to extract the
+vegetation index values underneath each point in the shapefile and store
+those index values for Machine Learning training. The shapefile also
+contains label information. For simplicity, it only has two distinct
+classes, i.e., <code class="docutils literal notranslate"><span class="pre">Vegetation</span></code> and <code class="docutils literal notranslate"><span class="pre">Water</span></code>.</p>
+<p>For extraction by points, we can use the
+<code class="docutils literal notranslate"><span class="pre">raster4ml.extraction.batch_extract_values_by_points</span></code> function. This
+will enable extraction of multiple raster data at once. The function
+takes <code class="docutils literal notranslate"><span class="pre">image_paths</span></code> as a list, <code class="docutils literal notranslate"><span class="pre">shape_path</span></code> as a string, and a
+<code class="docutils literal notranslate"><span class="pre">unique_id</span></code> in the shapefile which uniquely represent each point. The
+function returns a pandas dataframe.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Visualize the shapefile onto the map</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_shape</span><span class="p">(</span><span class="n">shape_path</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\shapes\points.shp&#39;</span><span class="p">,</span> <span class="n">layer_control</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">m</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find the paths of all the vegetation indices</span>
+<span class="n">vi_paths</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\*.tif&#39;</span><span class="p">)</span>
+<span class="n">vi_paths</span>
+</pre></div>
+</div>
+<pre class="literal-block">['F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\ARI_1.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\ARI_2.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\ARVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\CRI_1.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\CRI_2.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\DVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\EVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GARI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GCI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GDVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GEMI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GLI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GNDVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GRVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GSAVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\GVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\IPVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MCARI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MNDWI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MNLI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MRENDVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MRESR.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MSAVI_2.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MSI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MSR.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\MTVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\NBR.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\NDBI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\NDII.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\NDSI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\NDVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\NLI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\NMDI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\OSAVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\PRI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\PSRI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\RDVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\RENDVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\SAVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\SIPI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\SR_1.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\TCARI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\TDVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\TVI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\VARI.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\VREI_1.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\VREI_2.tif',
+ 'F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\VIs\WDRVI.tif']</pre>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Batch extract values by points</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">batch_extract_values_by_points</span><span class="p">(</span><span class="n">image_paths</span><span class="o">=</span><span class="n">vi_paths</span><span class="p">,</span>
+                                        <span class="n">shape_path</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\shapes\points.shp&#39;</span><span class="p">,</span>
+                                        <span class="n">unique_id</span><span class="o">=</span><span class="s1">&#39;UID&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 48/48 [00:29&lt;00:00,  1.62it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">6</span> <span class="n">columns</span> <span class="n">were</span> <span class="n">removed</span> <span class="kn">from</span> <span class="nn">the</span> <span class="n">dataframe</span> <span class="k">as</span> <span class="n">they</span> <span class="n">had</span> <span class="n">duplicated</span> <span class="n">values</span><span class="o">.</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">values</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ARI_1</th>
+      <th>ARI_2</th>
+      <th>ARVI</th>
+      <th>CRI_1</th>
+      <th>CRI_2</th>
+      <th>DVI</th>
+      <th>EVI</th>
+      <th>GARI</th>
+      <th>GCI</th>
+      <th>GDVI</th>
+      <th>...</th>
+      <th>PSRI</th>
+      <th>RDVI</th>
+      <th>SAVI</th>
+      <th>SIPI</th>
+      <th>SR_1</th>
+      <th>TCARI</th>
+      <th>TDVI</th>
+      <th>TVI</th>
+      <th>VARI</th>
+      <th>WDRVI</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-0.062945</td>
+      <td>-0.108279</td>
+      <td>0.234300</td>
+      <td>-0.065647</td>
+      <td>-0.128593</td>
+      <td>-0.199707</td>
+      <td>0.102306</td>
+      <td>0.213949</td>
+      <td>-0.212297</td>
+      <td>-0.463623</td>
+      <td>...</td>
+      <td>-0.327823</td>
+      <td>-0.104673</td>
+      <td>-0.072355</td>
+      <td>5.270171</td>
+      <td>0.895982</td>
+      <td>0.158350</td>
+      <td>-0.129161</td>
+      <td>10.556641</td>
+      <td>0.169782</td>
+      <td>-0.696070</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-0.081763</td>
+      <td>-0.139712</td>
+      <td>0.224136</td>
+      <td>-0.051108</td>
+      <td>-0.132871</td>
+      <td>-0.245361</td>
+      <td>0.114394</td>
+      <td>0.191005</td>
+      <td>-0.265274</td>
+      <td>-0.616943</td>
+      <td>...</td>
+      <td>-0.350700</td>
+      <td>-0.128203</td>
+      <td>-0.088411</td>
+      <td>4.550249</td>
+      <td>0.874438</td>
+      <td>0.222949</td>
+      <td>-0.158764</td>
+      <td>14.863281</td>
+      <td>0.226522</td>
+      <td>-0.702291</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-0.078562</td>
+      <td>-0.133685</td>
+      <td>0.156079</td>
+      <td>-0.039564</td>
+      <td>-0.118126</td>
+      <td>-0.395264</td>
+      <td>0.175768</td>
+      <td>0.120093</td>
+      <td>-0.322182</td>
+      <td>-0.808838</td>
+      <td>...</td>
+      <td>-0.329258</td>
+      <td>-0.202804</td>
+      <td>-0.137928</td>
+      <td>3.162446</td>
+      <td>0.811503</td>
+      <td>0.248145</td>
+      <td>-0.252982</td>
+      <td>16.542969</td>
+      <td>0.227230</td>
+      <td>-0.720725</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>0.000882</td>
+      <td>0.003013</td>
+      <td>0.162228</td>
+      <td>-0.010190</td>
+      <td>-0.009307</td>
+      <td>0.729492</td>
+      <td>-14.067797</td>
+      <td>0.142689</td>
+      <td>0.274649</td>
+      <td>0.735840</td>
+      <td>...</td>
+      <td>-0.025636</td>
+      <td>0.295349</td>
+      <td>0.165779</td>
+      <td>0.693106</td>
+      <td>1.271636</td>
+      <td>-0.003809</td>
+      <td>0.283973</td>
+      <td>-0.253906</td>
+      <td>-0.002432</td>
+      <td>-0.594480</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.037863</td>
+      <td>-0.067416</td>
+      <td>-0.005319</td>
+      <td>-0.026779</td>
+      <td>-0.064642</td>
+      <td>-0.605957</td>
+      <td>0.372762</td>
+      <td>-0.028112</td>
+      <td>-0.321329</td>
+      <td>-0.843018</td>
+      <td>...</td>
+      <td>-0.182404</td>
+      <td>-0.296846</td>
+      <td>-0.194758</td>
+      <td>1.968574</td>
+      <td>0.746087</td>
+      <td>0.142236</td>
+      <td>-0.369330</td>
+      <td>9.482422</td>
+      <td>0.108334</td>
+      <td>-0.740315</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>-0.060378</td>
+      <td>-0.227981</td>
+      <td>0.509099</td>
+      <td>-0.041061</td>
+      <td>-0.101440</td>
+      <td>1.830078</td>
+      <td>-2.642041</td>
+      <td>0.461469</td>
+      <td>0.712546</td>
+      <td>1.571045</td>
+      <td>...</td>
+      <td>-0.245922</td>
+      <td>0.765082</td>
+      <td>0.441218</td>
+      <td>0.607924</td>
+      <td>1.940527</td>
+      <td>0.155420</td>
+      <td>0.671681</td>
+      <td>10.361328</td>
+      <td>0.150049</td>
+      <td>-0.440813</td>
+    </tr>
+    <tr>
+      <th>96</th>
+      <td>-0.053707</td>
+      <td>-0.094210</td>
+      <td>0.223083</td>
+      <td>-0.068999</td>
+      <td>-0.122705</td>
+      <td>-0.169678</td>
+      <td>0.092413</td>
+      <td>0.214349</td>
+      <td>-0.182408</td>
+      <td>-0.391357</td>
+      <td>...</td>
+      <td>-0.309010</td>
+      <td>-0.088475</td>
+      <td>-0.060919</td>
+      <td>5.771223</td>
+      <td>0.911802</td>
+      <td>0.133008</td>
+      <td>-0.108518</td>
+      <td>8.867188</td>
+      <td>0.142925</td>
+      <td>-0.691532</td>
+    </tr>
+    <tr>
+      <th>97</th>
+      <td>-0.044730</td>
+      <td>-0.080789</td>
+      <td>0.011139</td>
+      <td>-0.021725</td>
+      <td>-0.066455</td>
+      <td>-0.544189</td>
+      <td>0.341630</td>
+      <td>-0.021856</td>
+      <td>-0.312326</td>
+      <td>-0.820312</td>
+      <td>...</td>
+      <td>-0.185104</td>
+      <td>-0.266923</td>
+      <td>-0.175300</td>
+      <td>2.073127</td>
+      <td>0.768464</td>
+      <td>0.165674</td>
+      <td>-0.330165</td>
+      <td>11.044922</td>
+      <td>0.126003</td>
+      <td>-0.733564</td>
+    </tr>
+    <tr>
+      <th>98</th>
+      <td>-0.015176</td>
+      <td>-0.029507</td>
+      <td>-0.061845</td>
+      <td>-0.015265</td>
+      <td>-0.030441</td>
+      <td>-0.604248</td>
+      <td>0.607601</td>
+      <td>-0.080921</td>
+      <td>-0.266599</td>
+      <td>-0.706787</td>
+      <td>...</td>
+      <td>-0.084108</td>
+      <td>-0.285070</td>
+      <td>-0.181531</td>
+      <td>1.575758</td>
+      <td>0.762908</td>
+      <td>0.061523</td>
+      <td>-0.346838</td>
+      <td>4.101562</td>
+      <td>0.042080</td>
+      <td>-0.735235</td>
+    </tr>
+    <tr>
+      <th>99</th>
+      <td>-0.010707</td>
+      <td>-0.039700</td>
+      <td>0.225351</td>
+      <td>-0.006250</td>
+      <td>-0.016957</td>
+      <td>1.082520</td>
+      <td>-18.352650</td>
+      <td>0.195860</td>
+      <td>0.372650</td>
+      <td>1.006592</td>
+      <td>...</td>
+      <td>-0.046592</td>
+      <td>0.430161</td>
+      <td>0.237638</td>
+      <td>0.740189</td>
+      <td>1.412350</td>
+      <td>0.045557</td>
+      <td>0.395307</td>
+      <td>3.037109</td>
+      <td>0.029442</td>
+      <td>-0.559491</td>
+    </tr>
+  </tbody>
+</table>
+<p>100 rows × 42 columns</p>
+</div></section>
+<section id="machine-learning-training">
+<h2>4. Machine Learning Training<a class="headerlink" href="#machine-learning-training" title="Permalink to this heading"></a></h2>
+<p>Now that we have our data ready, let’s build our machine learning model
+pipelines. We will explore two machine learning models, i.e., Support
+Vector Machine (SVM) and Random Forest (RF) classification here. Our
+target variable can be found in the point shapefile as the <code class="docutils literal notranslate"><span class="pre">Label</span></code>
+column. The independent variables will be the vegetation index values
+calculated in the last step.</p>
+<p>We will utilize functionalities from <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code> to train the
+models. <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code> has an automatic <code class="docutils literal notranslate"><span class="pre">pipeline</span></code> feature that
+performs several tasks at once. Machine learning models also require
+<strong>hyperparameter tuning</strong> to fine tune the model. <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code> has a
+fetaure for automatically doing that as well using <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code>. We
+will employ all these steps at once using the pipeline.</p>
+<p>Therfore install the <code class="docutils literal notranslate"><span class="pre">scikit-learn</span></code> using either <code class="docutils literal notranslate"><span class="pre">pip</span></code> or <code class="docutils literal notranslate"><span class="pre">conda</span></code>
+in the same environment and import the following modules.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
+
+<span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="nn">gpd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Read the shapefile to get the points shapefile</span>
+<span class="c1"># Note that the rows of this shapefile and the extracted values match</span>
+<span class="n">shape</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;F:\raster4ml\data\landsat\LC08_L1TP_137045_20210317_20210328_01_T1\shapes\points.shp&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">shape</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Label</th>
+      <th>UID</th>
+      <th>geometry</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Water</td>
+      <td>0</td>
+      <td>POINT (193223.422 2349711.302)</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Water</td>
+      <td>1</td>
+      <td>POINT (162754.153 2379518.334)</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Water</td>
+      <td>2</td>
+      <td>POINT (124137.222 2358381.247)</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Vegetation</td>
+      <td>3</td>
+      <td>POINT (224283.022 2424062.863)</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Water</td>
+      <td>4</td>
+      <td>POINT (136454.441 2394163.347)</td>
+    </tr>
+  </tbody>
+</table>
+</div><p>First, we need to split the dataset into training and testing set.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="s1">&#39;Label&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;X_train shape:&#39;</span><span class="p">,</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;X_test shape:&#39;</span><span class="p">,</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;y_train shape:&#39;</span><span class="p">,</span> <span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;y_test shape:&#39;</span><span class="p">,</span> <span class="n">y_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">X_train</span> <span class="n">shape</span><span class="p">:</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="n">shape</span><span class="p">:</span> <span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>
+<span class="n">y_train</span> <span class="n">shape</span><span class="p">:</span> <span class="p">(</span><span class="mi">70</span><span class="p">,)</span>
+<span class="n">y_test</span> <span class="n">shape</span><span class="p">:</span> <span class="p">(</span><span class="mi">30</span><span class="p">,)</span>
+</pre></div>
+</div>
+<p>Then, we just need to define the <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code>, <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> and the
+model to do the training.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Support Vector Machine</span>
+
+<span class="c1"># Define pipeline</span>
+<span class="n">pipe_svc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">MinMaxScaler</span><span class="p">()),</span> <span class="c1"># Scaling the data from 0 to 1</span>
+                           <span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">SVC</span><span class="p">())])</span>
+
+<span class="c1"># Define pipeline parameters</span>
+<span class="c1"># Note that we are only testing 2 hyperparameters, you can do even more or expand the search</span>
+<span class="n">param_svc</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;model__gamma&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)],</span>
+             <span class="s1">&#39;model__C&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)]}</span>
+
+<span class="c1"># Define grid</span>
+<span class="n">grid_svc</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">pipe_svc</span><span class="p">,</span>
+                        <span class="n">param_grid</span><span class="o">=</span><span class="n">param_svc</span><span class="p">,</span>
+                        <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="c1"># 5-fold cross validation</span>
+                        <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># Paralelly using 4 CPU cores</span>
+<span class="n">grid_svc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+<style>#sk-container-id-2 {color: black;background-color: white;}#sk-container-id-2 pre{padding: 0;}#sk-container-id-2 div.sk-toggleable {background-color: white;}#sk-container-id-2 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-2 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-2 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-2 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-2 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-2 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-2 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-2 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-2 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-2 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-2 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-2 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-2 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-2 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-2 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-2 div.sk-item {position: relative;z-index: 1;}#sk-container-id-2 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-2 div.sk-item::before, #sk-container-id-2 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-2 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-2 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-2 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-2 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-2 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-2 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-2 div.sk-label-container {text-align: center;}#sk-container-id-2 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-2 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-2" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>GridSearchCV(cv=5,
+             estimator=Pipeline(steps=[(&#x27;scaler&#x27;, MinMaxScaler()),
+                                       (&#x27;model&#x27;, SVC())]),
+             n_jobs=4,
+             param_grid={&#x27;model__C&#x27;: [0.0009765625, 0.001953125, 0.00390625,
+                                      0.0078125, 0.015625, 0.03125, 0.0625,
+                                      0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0,
+                                      16.0, 32.0, 64.0],
+                         &#x27;model__gamma&#x27;: [0.0009765625, 0.001953125, 0.00390625,
+                                          0.0078125, 0.015625, 0.03125, 0.0625,
+                                          0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0,
+                                          16.0, 32.0, 64.0]})</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox" ><label for="sk-estimator-id-5" class="sk-toggleable__label sk-toggleable__label-arrow">GridSearchCV</label><div class="sk-toggleable__content"><pre>GridSearchCV(cv=5,
+             estimator=Pipeline(steps=[(&#x27;scaler&#x27;, MinMaxScaler()),
+                                       (&#x27;model&#x27;, SVC())]),
+             n_jobs=4,
+             param_grid={&#x27;model__C&#x27;: [0.0009765625, 0.001953125, 0.00390625,
+                                      0.0078125, 0.015625, 0.03125, 0.0625,
+                                      0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0,
+                                      16.0, 32.0, 64.0],
+                         &#x27;model__gamma&#x27;: [0.0009765625, 0.001953125, 0.00390625,
+                                          0.0078125, 0.015625, 0.03125, 0.0625,
+                                          0.125, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0,
+                                          16.0, 32.0, 64.0]})</pre></div></div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox" ><label for="sk-estimator-id-6" class="sk-toggleable__label sk-toggleable__label-arrow">estimator: Pipeline</label><div class="sk-toggleable__content"><pre>Pipeline(steps=[(&#x27;scaler&#x27;, MinMaxScaler()), (&#x27;model&#x27;, SVC())])</pre></div></div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox" ><label for="sk-estimator-id-7" class="sk-toggleable__label sk-toggleable__label-arrow">MinMaxScaler</label><div class="sk-toggleable__content"><pre>MinMaxScaler()</pre></div></div></div><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-8" type="checkbox" ><label for="sk-estimator-id-8" class="sk-toggleable__label sk-toggleable__label-arrow">SVC</label><div class="sk-toggleable__content"><pre>SVC()</pre></div></div></div></div></div></div></div></div></div></div></div></div><div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Random Forest Classifier</span>
+
+<span class="c1"># Define pipeline</span>
+<span class="n">pipe_rfc</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">MinMaxScaler</span><span class="p">()),</span> <span class="c1"># Scaling the data from 0 to 1</span>
+                           <span class="p">(</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">())])</span>
+
+<span class="c1"># Define pipeline parameters</span>
+<span class="c1"># Note that we are only testing 2 hyperparameters, you can do even more or expand the search</span>
+<span class="n">param_rfc</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;model__n_estimators&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="o">**</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)],</span>
+             <span class="s1">&#39;model__max_features&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;sqrt&#39;</span><span class="p">,</span> <span class="s1">&#39;log2&#39;</span><span class="p">]}</span>
+
+<span class="c1"># Define grid</span>
+<span class="n">grid_rfc</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">estimator</span><span class="o">=</span><span class="n">pipe_rfc</span><span class="p">,</span>
+                        <span class="n">param_grid</span><span class="o">=</span><span class="n">param_rfc</span><span class="p">,</span>
+                        <span class="n">cv</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="c1"># 5-fold cross validation</span>
+                        <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># Paralelly using 4 CPU cores</span>
+<span class="n">grid_rfc</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+</pre></div>
+</div>
+<pre class="literal-block">C:Userssbhadra.condaenvsraster4ml_devlibsite-packagessklearnensemble_forest.py:427: FutureWarning: <cite>max_features='auto'</cite> has been deprecated in 1.1 and will be removed in 1.3. To keep the past behaviour, explicitly set <cite>max_features='sqrt'</cite> or remove this parameter as it is also the default value for RandomForestClassifiers and ExtraTreesClassifiers.
+  warn(</pre>
+<style>#sk-container-id-3 {color: black;background-color: white;}#sk-container-id-3 pre{padding: 0;}#sk-container-id-3 div.sk-toggleable {background-color: white;}#sk-container-id-3 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-3 label.sk-toggleable__label-arrow:before {content: "▸";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-3 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-3 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-3 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-3 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-3 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-3 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: "▾";}#sk-container-id-3 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-3 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-3 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-3 div.sk-parallel-item::after {content: "";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-3 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-3 div.sk-serial::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-3 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-3 div.sk-item {position: relative;z-index: 1;}#sk-container-id-3 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-3 div.sk-item::before, #sk-container-id-3 div.sk-parallel-item::before {content: "";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-3 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-3 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-3 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-3 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-3 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-3 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-3 div.sk-label-container {text-align: center;}#sk-container-id-3 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-3 div.sk-text-repr-fallback {display: none;}</style><div id="sk-container-id-3" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>GridSearchCV(cv=5,
+             estimator=Pipeline(steps=[(&#x27;scaler&#x27;, MinMaxScaler()),
+                                       (&#x27;model&#x27;, RandomForestClassifier())]),
+             n_jobs=4,
+             param_grid={&#x27;model__max_features&#x27;: [&#x27;auto&#x27;, &#x27;sqrt&#x27;, &#x27;log2&#x27;],
+                         &#x27;model__n_estimators&#x27;: [1, 2, 4, 8, 16]})</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-9" type="checkbox" ><label for="sk-estimator-id-9" class="sk-toggleable__label sk-toggleable__label-arrow">GridSearchCV</label><div class="sk-toggleable__content"><pre>GridSearchCV(cv=5,
+             estimator=Pipeline(steps=[(&#x27;scaler&#x27;, MinMaxScaler()),
+                                       (&#x27;model&#x27;, RandomForestClassifier())]),
+             n_jobs=4,
+             param_grid={&#x27;model__max_features&#x27;: [&#x27;auto&#x27;, &#x27;sqrt&#x27;, &#x27;log2&#x27;],
+                         &#x27;model__n_estimators&#x27;: [1, 2, 4, 8, 16]})</pre></div></div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-10" type="checkbox" ><label for="sk-estimator-id-10" class="sk-toggleable__label sk-toggleable__label-arrow">estimator: Pipeline</label><div class="sk-toggleable__content"><pre>Pipeline(steps=[(&#x27;scaler&#x27;, MinMaxScaler()),
+                (&#x27;model&#x27;, RandomForestClassifier())])</pre></div></div></div><div class="sk-serial"><div class="sk-item"><div class="sk-serial"><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-11" type="checkbox" ><label for="sk-estimator-id-11" class="sk-toggleable__label sk-toggleable__label-arrow">MinMaxScaler</label><div class="sk-toggleable__content"><pre>MinMaxScaler()</pre></div></div></div><div class="sk-item"><div class="sk-estimator sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-12" type="checkbox" ><label for="sk-estimator-id-12" class="sk-toggleable__label sk-toggleable__label-arrow">RandomForestClassifier</label><div class="sk-toggleable__content"><pre>RandomForestClassifier()</pre></div></div></div></div></div></div></div></div></div></div></div></div><p>Now that we have trained two models, lets check the accuracy score from
+both models. We can directly use the <code class="docutils literal notranslate"><span class="pre">grid</span></code> objects. If we directly
+predict from the <code class="docutils literal notranslate"><span class="pre">grid</span></code> object, then it picks out the model with the
+best hyperparameters and use that for prediction. You can also go into
+the <code class="docutils literal notranslate"><span class="pre">grid</span></code> object and examine which model to pick and so on. Please
+refer
+<a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html">here</a>
+to learn more.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict the test set</span>
+<span class="n">y_pred_svc</span> <span class="o">=</span> <span class="n">grid_svc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">y_pred_rfc</span> <span class="o">=</span> <span class="n">grid_rfc</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Accuracy from SVC: </span><span class="si">{</span><span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_svc</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Accuracy from RFC: </span><span class="si">{</span><span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_rfc</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Accuracy</span> <span class="kn">from</span> <span class="nn">SVC</span><span class="p">:</span> <span class="mf">0.97</span>
+<span class="n">Accuracy</span> <span class="kn">from</span> <span class="nn">RFC</span><span class="p">:</span> <span class="mf">1.00</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Sourav Bhadra.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

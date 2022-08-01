@@ -1,0 +1,51 @@
+======================================================================
+Raster4ML: A geospatial raster processing library for machine learning
+======================================================================
+
+Raster4ML is a python package that extracts machine learning ready dataset 
+from geospatial raster data and shapefiles. The package aims to aid geospatial 
+researchers and scientists to extract meaningful faetures easily and focus more 
+on the model training or reproducibility issues.
+
+Key Features
+============
+* Stack raster bands
+* Automatically calculate vegetation indices (supports 350+ indices)
+* Extract raster values based on shapefile
+* Clip raster based on polygon
+
+Raster4ML works with raster data derived from satellites, airplanes or UAVs. 
+The applications can be supported in precision agriculture, plant phenotyping,
+hydrology, natural resource management, and other fields within the geospatial 
+science.
+
+Here is an example of creating as many vegetation index as the image wavelenghts 
+support by simply using the following function:
+
+.. code:: python
+
+    from raster4ml.features import VegetaionIndices
+
+    vi = VegetaionIndices(image_path='example.tif',
+                          wavelengths=[[430, 450], [450, 510], [530, 590], [640, 670]])
+
+    vi.calculate(out_path='out_dir')
+
+
+
+.. toctree::
+   :maxdepth: 2
+
+   intro
+   installation
+   quickstart
+   topics/index
+   Raster4ML API Reference <raster4ml>
+   contributing
+
+Indices and Tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
