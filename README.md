@@ -1,4 +1,4 @@
-![raster4ml-logo](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/images/raster4ml_logo.png)
+![raster4ml-logo](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/docs/images/raster4ml_logo.png)
 
 When geospatial raster data is concerned in a machine learning pipeline, it is often required to extract meaningful features, such as vegetation indices (e.g., NDVI, EVI, NDRE, etc.) or textures. This package provides easy-to-use functions that can automatically calculates the features with one or several lines of codes in Python. It also has the functionality of extracting statistics based on shapefile (i.e., point or polygon) from a raster data. Any type of raster data is supported regardless of satellite or UAVs.
 
@@ -27,7 +27,7 @@ When geospatial raster data is concerned in a machine learning pipeline, it is o
     m.add_raster(image_path='Landsat8.tif', bands=[4, 3, 2])
     ```
     Output:
-    ![map-output](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/images/map_output.png)
+    ![map-output](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/docs/images/map_output.png)
 
 # How to Install?
 ## Dependencies
