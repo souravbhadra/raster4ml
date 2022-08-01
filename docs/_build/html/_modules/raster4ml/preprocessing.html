@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>raster4ml.preprocessing &mdash; raster4ml 0.1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> raster4ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raster4ml.html">Raster4ML API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">raster4ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>raster4ml.preprocessing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for raster4ml.preprocessing</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">rasterio</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">rasterio.warp</span> <span class="kn">import</span> <span class="n">calculate_default_transform</span><span class="p">,</span> <span class="n">reproject</span><span class="p">,</span> <span class="n">Resampling</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+
+<div class="viewcode-block" id="stack_bands"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.preprocessing.stack_bands">[docs]</a><span class="k">def</span> <span class="nf">stack_bands</span><span class="p">(</span><span class="n">image_paths</span><span class="p">,</span> <span class="n">out_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stack the images together as bands.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image_paths : list</span>
+<span class="sd">        List of images that needs to be stacked</span>
+<span class="sd">    out_file : src</span>
+<span class="sd">        Output path fot the stacked image. Supports .tif.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        Nothing returns, the image is saved.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If invalid image path is given.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Read all the individual bands</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">srcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span> <span class="k">for</span> <span class="n">image_path</span> <span class="ow">in</span> <span class="n">image_paths</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    
+    <span class="c1"># Check if the x and y are same for all the bands or not</span>
+    <span class="n">xy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">src</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">width</span><span class="p">)</span> <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">srcs</span><span class="p">])</span>
+    <span class="c1"># Get max x and y</span>
+    <span class="n">max_x</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">max_y</span> <span class="o">=</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>  
+
+    <span class="k">if</span> <span class="n">srcs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">nodata</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nodata_value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">nodata_value</span> <span class="o">=</span> <span class="n">srcs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">nodata</span>
+
+    <span class="c1"># Empty array to hold stack image</span>
+    <span class="n">stack_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">image_paths</span><span class="p">),</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">xy</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+    <span class="c1"># Loop through each src</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">srcs</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">width</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">max_x</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">img</span><span class="p">[</span><span class="n">img</span><span class="o">==</span><span class="n">nodata_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">(</span><span class="n">max_x</span><span class="p">,</span> <span class="n">max_y</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_NEAREST</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">image_paths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2"> resized.&quot;</span><span class="p">)</span>
+            <span class="n">stack_img</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">img</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">stack_img</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">img</span>
+    <span class="c1"># Save</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">save_raster</span><span class="p">(</span><span class="n">srcs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stack_img</span><span class="p">,</span> <span class="n">out_file</span><span class="p">,</span>
+                      <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;GTiff&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">max_y</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">max_x</span><span class="p">,</span>
+                      <span class="n">count</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">image_paths</span><span class="p">))</span>
+    <span class="k">return</span> <span class="kc">None</span> </div>
+
+
+<div class="viewcode-block" id="reproject_raster"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.preprocessing.reproject_raster">[docs]</a><span class="k">def</span> <span class="nf">reproject_raster</span><span class="p">(</span><span class="n">src_image_path</span><span class="p">,</span> <span class="n">dst_image_path</span><span class="p">,</span> <span class="n">band</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">dst_crs</span><span class="o">=</span><span class="s1">&#39;EPSG:4326&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reproject the raster into a different CRS.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    src_image_path : str</span>
+<span class="sd">        Path of the image to be reprojected.</span>
+<span class="sd">    dst_image_path : src</span>
+<span class="sd">        Path of the destination image as reprojected.</span>
+<span class="sd">    band : int, (Optional)</span>
+<span class="sd">        Specify the band to reproject.</span>
+<span class="sd">    dst_crs : str</span>
+<span class="sd">        The destination CRS in EPSG code. For example, &#39;EPSG:4326&#39;, Default to &#39;EPSG:4326&#39;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        Nothing returns, the image is saved.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">src_image_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">transform</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">calculate_default_transform</span><span class="p">(</span>
+            <span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">dst_crs</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="o">*</span><span class="n">src</span><span class="o">.</span><span class="n">bounds</span>
+        <span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s1">&#39;crs&#39;</span><span class="p">:</span> <span class="n">dst_crs</span><span class="p">,</span>
+            <span class="s1">&#39;transform&#39;</span><span class="p">:</span> <span class="n">transform</span><span class="p">,</span>
+            <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="n">width</span><span class="p">,</span>
+            <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="n">height</span>
+        <span class="p">})</span>
+        
+        <span class="k">if</span> <span class="n">band</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dst_image_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">count</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="n">reproject</span><span class="p">(</span>
+                        <span class="n">source</span><span class="o">=</span><span class="n">rasterio</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span>
+                        <span class="n">destination</span><span class="o">=</span><span class="n">rasterio</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span>
+                        <span class="n">src_transform</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span>
+                        <span class="n">src_crs</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
+                        <span class="n">dst_transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+                        <span class="n">dst_crs</span><span class="o">=</span><span class="n">dst_crs</span><span class="p">,</span>
+                        <span class="n">resampling</span><span class="o">=</span><span class="n">Resampling</span><span class="o">.</span><span class="n">nearest</span>
+                    <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dst_image_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst</span><span class="p">:</span>
+                <span class="n">reproject</span><span class="p">(</span>
+                    <span class="n">source</span><span class="o">=</span><span class="n">rasterio</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">band</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">destination</span><span class="o">=</span><span class="n">rasterio</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">band</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="n">src_transform</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span>
+                    <span class="n">src_crs</span><span class="o">=</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
+                    <span class="n">dst_transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+                    <span class="n">dst_crs</span><span class="o">=</span><span class="n">dst_crs</span><span class="p">,</span>
+                    <span class="n">resampling</span><span class="o">=</span><span class="n">Resampling</span><span class="o">.</span><span class="n">nearest</span>
+                <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="kc">None</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Sourav Bhadra.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
