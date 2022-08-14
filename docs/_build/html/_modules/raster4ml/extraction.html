@@ -39,6 +39,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../intro.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../raster4ml.html">Raster4ML API Reference</a></li>
 </ul>
 
@@ -68,6 +69,7 @@
              
   <h1>Source code for raster4ml.extraction</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">rasterio</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -77,10 +79,12 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
 
 
-<div class="viewcode-block" id="extract_values_by_points"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.extraction.extract_values_by_points">[docs]</a><span class="k">def</span> <span class="nf">extract_values_by_points</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">shape_path</span><span class="p">,</span> <span class="n">unique_id</span><span class="p">):</span>
+<div class="viewcode-block" id="extract_by_points"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.extraction.extract_by_points">[docs]</a><span class="k">def</span> <span class="nf">extract_by_points</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span>
+                      <span class="n">shape_path</span><span class="p">,</span>
+                      <span class="n">unique_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Extract value by a point shapefile.</span>
 <span class="sd">    </span>
-<span class="sd">    The function will extract the pixel values underneat each point</span>
+<span class="sd">    The function will extract the pixel values underneath each point</span>
 <span class="sd">    in a given point shapefile.</span>
 
 <span class="sd">    Parameters</span>
@@ -158,7 +162,9 @@
             <span class="n">duplicates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">duplicates</span></div>
 
-<div class="viewcode-block" id="batch_extract_values_by_points"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.extraction.batch_extract_values_by_points">[docs]</a><span class="k">def</span> <span class="nf">batch_extract_values_by_points</span><span class="p">(</span><span class="n">image_paths</span><span class="p">,</span> <span class="n">shape_path</span><span class="p">,</span> <span class="n">unique_id</span><span class="p">):</span>
+<div class="viewcode-block" id="batch_extract_by_points"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.extraction.batch_extract_by_points">[docs]</a><span class="k">def</span> <span class="nf">batch_extract_by_points</span><span class="p">(</span><span class="n">image_paths</span><span class="p">,</span>
+                            <span class="n">shape_path</span><span class="p">,</span>
+                            <span class="n">unique_id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Batch extract values from a set of raster data using point</span>
 <span class="sd">    shapefile.</span>
 
@@ -188,8 +194,11 @@
     <span class="k">return</span> <span class="n">pixel_values_df</span></div>
 
 
-<div class="viewcode-block" id="extract_values_by_polygons"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.extraction.extract_values_by_polygons">[docs]</a><span class="k">def</span> <span class="nf">extract_values_by_polygons</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">shape_path</span><span class="p">,</span> <span class="n">unique_id</span><span class="p">,</span>
-                               <span class="n">statistics</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="extract_by_polygons"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.extraction.extract_by_polygons">[docs]</a><span class="k">def</span> <span class="nf">extract_by_polygons</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span>
+                        <span class="n">shape_path</span><span class="p">,</span>
+                        <span class="n">unique_id</span><span class="p">,</span>
+                        <span class="n">statistics</span><span class="p">,</span>
+                        <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Extract value from a raster data using a polygon shapefile.</span>
 <span class="sd">    Similar to Zonal Statistics.</span>
 
@@ -295,7 +304,10 @@
     <span class="k">return</span> <span class="n">stats</span></div>
 
 
-<div class="viewcode-block" id="batch_extract_values_by_polygons"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.extraction.batch_extract_values_by_polygons">[docs]</a><span class="k">def</span> <span class="nf">batch_extract_values_by_polygons</span><span class="p">(</span><span class="n">image_paths</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<div class="viewcode-block" id="batch_extract_by_polygons"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.extraction.batch_extract_by_polygons">[docs]</a><span class="k">def</span> <span class="nf">batch_extract_by_polygons</span><span class="p">(</span><span class="n">image_paths</span><span class="p">,</span>
+                              <span class="n">shape_path</span><span class="p">,</span>
+                              <span class="n">unique_id</span><span class="p">,</span>
+                              <span class="n">statistics</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Batch extract value by a polygon shapefile from a given image</span>
 <span class="sd">    paths. Similar to zonal statistics.</span>
 
@@ -315,9 +327,11 @@
 <span class="sd">        corresponding statistics.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">stats_df</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">image_paths</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">image_paths</span><span class="p">,</span> <span class="s2">&quot;*.tif&quot;</span><span class="p">))</span>
     <span class="k">for</span> <span class="n">image_path</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">image_paths</span><span class="p">):</span>
         <span class="n">prefix</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">stats</span> <span class="o">=</span> <span class="n">extract_values_by_polygons</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">extract_values_by_polygons</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">shape_path</span><span class="p">,</span> <span class="n">unique_id</span><span class="p">,</span> <span class="n">statistics</span><span class="p">,</span> 
+                                           <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,)</span>
         <span class="n">stats_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
     <span class="n">stats_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">stats_df</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 

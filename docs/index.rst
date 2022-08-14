@@ -2,6 +2,9 @@
 Raster4ML: A geospatial raster processing library for machine learning
 ======================================================================
 
+.. image:: https://raw.githubusercontent.com/souravbhadra/raster4ml/master/docs/images/raster4ml_logo.png
+        :alt: raster4ml-logo
+
 Raster4ML is a python package that extracts machine learning ready dataset 
 from geospatial raster data and shapefiles. The package aims to aid geospatial 
 researchers and scientists to extract meaningful faetures easily and focus more 
@@ -38,9 +41,8 @@ support by simply using the following function:
    intro
    installation
    quickstart
-   topics/index
+   tutorials/index
    Raster4ML API Reference <raster4ml>
-   contributing
 
 Indices and Tables
 ==================

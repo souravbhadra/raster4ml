@@ -42,7 +42,7 @@ class VegetationIndices():
         If invalid image path is given.
     """
     
-    def __init__(self, image_path, wavelengths, bit_depth=None):
+    def __init__(self, image_path, wavelengths, threshold=10, bit_depth=None):
         """Constructs all the necessary attributes for the 
         VegetationIndices object.
 
@@ -85,6 +85,7 @@ class VegetationIndices():
         ValueError
             If invalid image path is given.
         """
+        self.threshold = threshold
         self.image_path = image_path
         self.src = rasterio.open(self.image_path)
         self.img = self.src.read()
@@ -138,7 +139,7 @@ class VegetationIndices():
             wavelength.
         """        
         difference = np.abs(np.array(self.wavelengths) - wavelength)
-        if difference.min() < 10:
+        if difference.min() < self.threshold:
             return self.img[:, :, difference.argmin()]
         else:
             return None

@@ -1,4 +1,5 @@
 import os
+import glob
 import rasterio
 import numpy as np
 import pandas as pd
@@ -8,10 +9,12 @@ from tqdm import tqdm
 from . import utils
 
 
-def extract_values_by_points(image_path, shape_path, unique_id):
+def extract_by_points(image_path,
+                      shape_path,
+                      unique_id):
     """Extract value by a point shapefile.
     
-    The function will extract the pixel values underneat each point
+    The function will extract the pixel values underneath each point
     in a given point shapefile.
 
     Parameters
@@ -89,7 +92,9 @@ def get_duplicated_columns(df):
             duplicates.append(col)
     return duplicates
 
-def batch_extract_values_by_points(image_paths, shape_path, unique_id):
+def batch_extract_by_points(image_paths,
+                            shape_path,
+                            unique_id):
     """Batch extract values from a set of raster data using point
     shapefile.
 
@@ -119,8 +124,11 @@ def batch_extract_values_by_points(image_paths, shape_path, unique_id):
     return pixel_values_df
 
 
-def extract_values_by_polygons(image_path, shape_path, unique_id,
-                               statistics, prefix=None):
+def extract_by_polygons(image_path,
+                        shape_path,
+                        unique_id,
+                        statistics,
+                        prefix=None):
     """Extract value from a raster data using a polygon shapefile.
     Similar to Zonal Statistics.
 
@@ -226,7 +234,10 @@ def extract_values_by_polygons(image_path, shape_path, unique_id,
     return stats
 
 
-def batch_extract_values_by_polygons(image_paths, *args):
+def batch_extract_by_polygons(image_paths,
+                              shape_path,
+                              unique_id,
+                              statistics):
     """Batch extract value by a polygon shapefile from a given image
     paths. Similar to zonal statistics.
 
@@ -246,9 +257,11 @@ def batch_extract_values_by_polygons(image_paths, *args):
         corresponding statistics.
     """
     stats_df = []
+    image_paths = glob.glob(os.path.join(image_paths, "*.tif"))
     for image_path in tqdm(image_paths):
         prefix = os.path.basename(image_path).split('.')[0]
-        stats = extract_values_by_polygons(image_path, prefix=prefix, *args)
+        stats = extract_values_by_polygons(image_path, shape_path, unique_id, statistics, 
+                                           prefix=prefix,)
         stats_df.append(stats)
     stats_df = pd.concat(stats_df, axis=1)
 
