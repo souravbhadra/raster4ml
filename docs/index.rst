@@ -42,7 +42,8 @@ support by simply using the following function:
    installation
    quickstart
    tutorials/index
-   Raster4ML API Reference <raster4ml>
+   raster4ml
+   modules
 
 Indices and Tables
 ==================

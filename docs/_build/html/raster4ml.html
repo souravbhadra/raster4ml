@@ -19,6 +19,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="raster4ml" href="modules.html" />
     <link rel="prev" title="Tutorial 1: Landcover Classification using Landsat 8" href="tutorials/tutorial_2.html" /> 
 </head>
 
@@ -42,7 +43,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tutorials/index.html">Tutorials</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Raster4ML API Reference</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">raster4ml package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-raster4ml.extraction">raster4ml.extraction module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-raster4ml.features">raster4ml.features module</a></li>
@@ -50,6 +51,19 @@
 <li class="toctree-l2"><a class="reference internal" href="#module-raster4ml.preprocessing">raster4ml.preprocessing module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-raster4ml.utils">raster4ml.utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-raster4ml">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">raster4ml</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">raster4ml package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-raster4ml.extraction">raster4ml.extraction module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-raster4ml.features">raster4ml.features module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-raster4ml.plotting">raster4ml.plotting module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-raster4ml.preprocessing">raster4ml.preprocessing module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-raster4ml.utils">raster4ml.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-raster4ml">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -94,7 +108,9 @@ shapefile.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image_paths</strong> (<em>list</em>) – List of image paths.</p></li>
-<li><p><strong>*args</strong> – Same arguments from extract_values_by_points() function.</p></li>
+<li><p><strong>shape_path</strong> (<em>str</em>) – Path of the shapefile.</p></li>
+<li><p><strong>unique_id</strong> (<em>str</em>) – A unique column in the shapefile which will be retained as
+the id.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -115,7 +131,20 @@ paths. Similar to zonal statistics.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>image_paths</strong> (<em>list</em>) – List of image paths.</p></li>
-<li><p><strong>*args</strong> – Same arguments from extract_values_by_polygons() function.</p></li>
+<li><p><strong>shape_path</strong> (<em>str</em>) – Path of the shapefile.</p></li>
+<li><p><strong>unique_id</strong> (<em>str</em>) – A unique column in the shapefile which will be retained as
+the id.</p></li>
+<li><p><strong>statistics</strong> (<em>str</em><em> or </em><em>list</em>) – List of statistics to be calculated if shape is polygon.
+Accepted statsitcs are either ‘all’ or a list containing
+follwoing statistics:
+‘mean’, ‘median’, ‘mode’, ‘sum’, ‘min’, ‘max’, ‘std’, ‘range’,
+‘iqr’, ‘unique’.
+If only one statistic to be calculated, that should be inside
+a list. For example, if only ‘mean’ is to be calculated, it
+should be given as [‘mean’].</p></li>
+<li><p><strong>prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – If predix is given, then the prefix will be used in front of
+the statistics name within the final dataframe column,
+by default None</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -131,8 +160,8 @@ corresponding statistics.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="raster4ml.extraction.clip_raster_by_polygons">
-<span class="sig-prename descclassname"><span class="pre">raster4ml.extraction.</span></span><span class="sig-name descname"><span class="pre">clip_raster_by_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'numpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raster4ml/extraction.html#clip_raster_by_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#raster4ml.extraction.clip_raster_by_polygons" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="raster4ml.extraction.clip_by_polygons">
+<span class="sig-prename descclassname"><span class="pre">raster4ml.extraction.</span></span><span class="sig-name descname"><span class="pre">clip_by_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'numpy'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raster4ml/extraction.html#clip_by_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#raster4ml.extraction.clip_by_polygons" title="Permalink to this definition"></a></dt>
 <dd><p>Clip a raster image by a polygon shapefile.</p>
 <p>Based on the geometry of each polygon, the function will clip the
 images and save it in a given directory with a unique name.</p>
@@ -155,7 +184,7 @@ by default ‘numpy’</p></li>
 <dd class="field-odd"><p>None</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – _description_</p>
+<dd class="field-even"><p><strong>ValueError</strong> – The shapefile must be either Polygon or MultiPolygon.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -182,7 +211,7 @@ the id.</p></li>
 <dd class="field-odd"><p>pandas dataframe</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – _description_</p>
+<dd class="field-even"><p><strong>ValueError</strong> – The shapefile must be either Point or MultiPoint.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -220,7 +249,7 @@ id.</p>
 <dd class="field-odd"><p>pandas dataframe</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – _description_</p>
+<dd class="field-even"><p><strong>ValueError</strong> – The shapefile must be either Polygon or MultiPolygon.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -249,53 +278,40 @@ id.</p>
 <dt class="sig sig-object py" id="raster4ml.features.VegetationIndices">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">raster4ml.features.</span></span><span class="sig-name descname"><span class="pre">VegetationIndices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wavelengths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raster4ml/features.html#VegetationIndices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#raster4ml.features.VegetationIndices" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Calculate vegetation indices from a given multispectral image.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="raster4ml.features.VegetationIndices.image_path">
-<span class="sig-name descname"><span class="pre">image_path</span></span><a class="headerlink" href="#raster4ml.features.VegetationIndices.image_path" title="Permalink to this definition"></a></dt>
-<dd><p>Path of the image.</p>
+<p>Constructs all the necessary attributes for the
+VegetationIndices object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="raster4ml.features.VegetationIndices.wavelengths">
-<span class="sig-name descname"><span class="pre">wavelengths</span></span><a class="headerlink" href="#raster4ml.features.VegetationIndices.wavelengths" title="Permalink to this definition"></a></dt>
-<dd><p>The wavelengths (in nanometer) of the bands in the stacked
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_path</strong> (<em>str</em>) – Path of the image.</p></li>
+<li><p><strong>wavelengths</strong> (<em>list</em><em> or </em><em>list of lists</em>) – <p>The wavelengths (in nanometer) of the bands in the stacked
 image. It can be either a list containing the center
 wavelengths of the bands, or it can be a list of lists
-where each element represents the initial and final wavelength.</p>
+where each element represents the initial and final
+wavelength.</p>
 <p>Example:
 If list: [430, 450, 560]
 If list of lists: [[420, 440], [530, 560], [670, 690]]</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>list or list of lists</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="raster4ml.features.VegetationIndices.bit_depth">
-<span class="sig-name descname"><span class="pre">bit_depth</span></span><a class="headerlink" href="#raster4ml.features.VegetationIndices.bit_depth" title="Permalink to this definition"></a></dt>
-<dd><p>Bit depth of the image. For example, Landsat 8 images are
+</p></li>
+<li><p><strong>threshold</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – An integer value which defines the threshold of wavelength.
+For example, if a band’s wavelngth is 550 nm and threshold
+is 10, then the vegetation index calculation will consider
+550 +/- 10 nm as the input. It is suggested to use smaller
+threshold value (or keep the default 10) while using
+hyperspectral images and larger values (may be 100) for
+multispectral images.</p></li>
+<li><p><strong>bit_depth</strong> (<em>int</em><em> (</em><em>optional</em><em>)</em>) – Bit depth of the image. For example, Landsat 8 images are
 14-bit. So if 14 is given as the bit_depth, then the image
-values will be divided by 2**14=16384.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>int (optional)</p>
+values will be divided by 2**14=16384.</p></li>
+</ul>
 </dd>
 </dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">calculate(out_dir,</span> <span class="pre">featuers='all'):</span></span></dt>
 <dd><p>Calculate all the vegetation indices possible.
-Allowed list of features are:</p>
+The index list is adapted from:
+<a class="reference external" href="https://www.indexdatabase.de/">https://www.indexdatabase.de/</a></p>
 </dd></dl>
 
 <dl class="field-list simple">
@@ -5409,6 +5425,7 @@ projection.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="tutorials/tutorial_2.html" class="btn btn-neutral float-left" title="Tutorial 1: Landcover Classification using Landsat 8" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="raster4ml" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

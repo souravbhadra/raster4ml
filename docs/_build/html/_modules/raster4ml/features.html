@@ -40,7 +40,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quick Start</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tutorials/index.html">Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../raster4ml.html">Raster4ML API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../raster4ml.html">raster4ml package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">raster4ml</a></li>
 </ul>
 
         </div>
@@ -79,9 +80,10 @@
 
 <div class="viewcode-block" id="VegetationIndices"><a class="viewcode-back" href="../../raster4ml.html#raster4ml.features.VegetationIndices">[docs]</a><span class="k">class</span> <span class="nc">VegetationIndices</span><span class="p">():</span>
     
-    <span class="sd">&quot;&quot;&quot;Calculate vegetation indices from a given multispectral image.</span>
+    <span class="sd">&quot;&quot;&quot;Constructs all the necessary attributes for the </span>
+<span class="sd">    VegetationIndices object.</span>
 
-<span class="sd">    Attributes</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    image_path : str</span>
 <span class="sd">        Path of the image.</span>
@@ -89,11 +91,20 @@
 <span class="sd">        The wavelengths (in nanometer) of the bands in the stacked</span>
 <span class="sd">        image. It can be either a list containing the center </span>
 <span class="sd">        wavelengths of the bands, or it can be a list of lists </span>
-<span class="sd">        where each element represents the initial and final wavelength.</span>
+<span class="sd">        where each element represents the initial and final</span>
+<span class="sd">        wavelength.</span>
 
 <span class="sd">        Example:</span>
 <span class="sd">        If list: [430, 450, 560]</span>
 <span class="sd">        If list of lists: [[420, 440], [530, 560], [670, 690]]</span>
+<span class="sd">    threshold : int (optional)</span>
+<span class="sd">        An integer value which defines the threshold of wavelength.</span>
+<span class="sd">        For example, if a band&#39;s wavelngth is 550 nm and threshold</span>
+<span class="sd">        is 10, then the vegetation index calculation will consider</span>
+<span class="sd">        550 +/- 10 nm as the input. It is suggested to use smaller</span>
+<span class="sd">        threshold value (or keep the default 10) while using </span>
+<span class="sd">        hyperspectral images and larger values (may be 100) for </span>
+<span class="sd">        multispectral images.</span>
 <span class="sd">    bit_depth : int (optional)</span>
 <span class="sd">        Bit depth of the image. For example, Landsat 8 images are</span>
 <span class="sd">        14-bit. So if 14 is given as the bit_depth, then the image</span>
@@ -103,8 +114,8 @@
 <span class="sd">    -------</span>
 <span class="sd">    calculate(out_dir, featuers=&#39;all&#39;):</span>
 <span class="sd">        Calculate all the vegetation indices possible.</span>
-<span class="sd">        Allowed list of features are:</span>
-<span class="sd">        </span>
+<span class="sd">        The index list is adapted from:</span>
+<span class="sd">        https://www.indexdatabase.de/</span>
 
 <span class="sd">    Raises</span>
 <span class="sd">    ------</span>
@@ -130,6 +141,14 @@
 <span class="sd">            Example:</span>
 <span class="sd">            If list: [430, 450, 560]</span>
 <span class="sd">            If list of lists: [[420, 440], [530, 560], [670, 690]]</span>
+<span class="sd">        threshold : int (optional)</span>
+<span class="sd">            An integer value which defines the threshold of wavelength.</span>
+<span class="sd">            For example, if a band&#39;s wavelngth is 550 nm and threshold</span>
+<span class="sd">            is 10, then the vegetation index calculation will consider</span>
+<span class="sd">            550 +/- 10 nm as the input. It is suggested to use smaller</span>
+<span class="sd">            threshold value (or keep the default 10) while using </span>
+<span class="sd">            hyperspectral images and larger values (may be 100) for </span>
+<span class="sd">            multispectral images.</span>
 <span class="sd">        bit_depth : int (optional)</span>
 <span class="sd">            Bit depth of the image. For example, Landsat 8 images are</span>
 <span class="sd">            14-bit. So if 14 is given as the bit_depth, then the image</span>
@@ -139,16 +158,8 @@
 <span class="sd">        -------</span>
 <span class="sd">        calculate(out_dir, featuers=&#39;all&#39;):</span>
 <span class="sd">            Calculate all the vegetation indices possible.</span>
-<span class="sd">            Allowed list of features are:</span>
-<span class="sd">            &#39;ARI_1&#39;, &#39;ARI_2&#39;, &#39;ARVI&#39;, &#39;CRI_1&#39;, &#39;CRI_2&#39;, &#39;DVI&#39;, &#39;EVI&#39;,</span>
-<span class="sd">            &#39;GEMI&#39;, &#39;GARI&#39;, &#39;GCI&#39;, &#39;GDVI&#39;, &#39;GLI&#39;, &#39;GNDVI&#39;, &#39;GOSAVI&#39;,</span>
-<span class="sd">            &#39;GRVI&#39;, &#39;GSAVI&#39;, &#39;GVI&#39;, &#39;IPVI&#39;, &#39;LCAI&#39;, &#39;MCARI&#39;, &#39;MNLI&#39;,</span>
-<span class="sd">            &#39;MNDWI&#39;, &#39;MRENDVI&#39;, &#39;MRESR&#39;, &#39;MSR&#39;, &#39;MSAVI_2&#39;, &#39;MTVI&#39;,</span>
-<span class="sd">            &#39;MSI&#39;, &#39;NLI&#39;, &#39;NBR&#39;, &#39;NBRT_1&#39;, &#39;NDBI&#39;, &#39;NDII&#39;, &#39;NDLI&#39;,</span>
-<span class="sd">            &#39;NDMI&#39;, &#39;NDNI&#39;, &#39;NDSI&#39;, &#39;NDVI&#39;, &#39;NDWI&#39;, &#39;NMDI&#39;, &#39;OSAVI&#39;,</span>
-<span class="sd">            &#39;PRI&#39;, &#39;PSRI&#39;, &#39;RENDVI&#39;, &#39;RDVI&#39;, &#39;SR_1&#39;, &#39;SAVI&#39;, &#39;SIPI&#39;,</span>
-<span class="sd">            &#39;TCARI&#39;, &#39;TDVI&#39;, &#39;TVI&#39;, &#39;VARI&#39;, &#39;VREI_1&#39;, &#39;VREI_2&#39;, &#39;WBI&#39;,</span>
-<span class="sd">            &#39;WDRVI&#39;</span>
+<span class="sd">            The index list is adapted from:</span>
+<span class="sd">            https://www.indexdatabase.de/</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
