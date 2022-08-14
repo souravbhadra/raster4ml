@@ -35,7 +35,7 @@ def extract_by_points(image_path,
     Raises
     ------
     ValueError
-        _description_
+        The shapefile must be either Point or MultiPoint.
     """
     # Open files
     src = rasterio.open(image_path)
@@ -102,8 +102,11 @@ def batch_extract_by_points(image_paths,
     ----------
     image_paths : list
         List of image paths.
-    *args : 
-        Same arguments from extract_values_by_points() function.   
+    shape_path : str
+        Path of the shapefile.
+    unique_id : str
+        A unique column in the shapefile which will be retained as
+        the id.   
 
     Returns
     -------
@@ -112,7 +115,7 @@ def batch_extract_by_points(image_paths,
     """
     pixel_values_df = []
     for image_path in tqdm(image_paths):
-        pixel_values = extract_values_by_points(image_path, shape_path, unique_id)
+        pixel_values = extract_by_points(image_path, shape_path, unique_id)
         pixel_values_df.append(pixel_values)
     pixel_values_df = pd.concat(pixel_values_df, axis=1)
     
@@ -164,7 +167,7 @@ def extract_by_polygons(image_path,
     Raises
     ------
     ValueError
-        _description_
+        The shapefile must be either Polygon or MultiPolygon.
     """
     # Open files
     src = rasterio.open(image_path)
@@ -245,8 +248,24 @@ def batch_extract_by_polygons(image_paths,
     ----------
     image_paths : list
         List of image paths.
-    *args : 
-        Same arguments from extract_values_by_polygons() function. 
+    shape_path : str
+        Path of the shapefile.
+    unique_id : str
+        A unique column in the shapefile which will be retained as
+        the id.
+    statistics : str or list
+        List of statistics to be calculated if shape is polygon.
+        Accepted statsitcs are either 'all' or a list containing 
+        follwoing statistics:
+        'mean', 'median', 'mode', 'sum', 'min', 'max', 'std', 'range',
+        'iqr', 'unique'.
+        If only one statistic to be calculated, that should be inside
+        a list. For example, if only 'mean' is to be calculated, it
+        should be given as ['mean'].
+    prefix : str, optional
+        If predix is given, then the prefix will be used in front of
+        the statistics name within the final dataframe column,
+        by default None 
 
     Returns
     -------
@@ -260,7 +279,7 @@ def batch_extract_by_polygons(image_paths,
     image_paths = glob.glob(os.path.join(image_paths, "*.tif"))
     for image_path in tqdm(image_paths):
         prefix = os.path.basename(image_path).split('.')[0]
-        stats = extract_values_by_polygons(image_path, shape_path, unique_id, statistics, 
+        stats = extract_by_polygons(image_path, shape_path, unique_id, statistics, 
                                            prefix=prefix,)
         stats_df.append(stats)
     stats_df = pd.concat(stats_df, axis=1)
@@ -273,8 +292,11 @@ def batch_extract_by_polygons(image_paths,
     return stats_df
 
 
-def clip_raster_by_polygons(image_path, shape_path, unique_id,
-                            out_dir, out_type='numpy'):
+def clip_by_polygons(image_path,
+                     shape_path,
+                     unique_id,
+                     out_dir,
+                     out_type='numpy'):
     """Clip a raster image by a polygon shapefile.
 
     Based on the geometry of each polygon, the function will clip the
@@ -303,7 +325,7 @@ def clip_raster_by_polygons(image_path, shape_path, unique_id,
     Raises
     ------
     ValueError
-        _description_
+        The shapefile must be either Polygon or MultiPolygon.
     """
     # Open files
     src = rasterio.open(image_path)

@@ -9,9 +9,10 @@ warnings.filterwarnings("ignore")
 
 class VegetationIndices():
     
-    """Calculate vegetation indices from a given multispectral image.
+    """Constructs all the necessary attributes for the 
+    VegetationIndices object.
 
-    Attributes
+    Parameters
     ----------
     image_path : str
         Path of the image.
@@ -19,11 +20,20 @@ class VegetationIndices():
         The wavelengths (in nanometer) of the bands in the stacked
         image. It can be either a list containing the center 
         wavelengths of the bands, or it can be a list of lists 
-        where each element represents the initial and final wavelength.
+        where each element represents the initial and final
+        wavelength.
 
         Example:
         If list: [430, 450, 560]
         If list of lists: [[420, 440], [530, 560], [670, 690]]
+    threshold : int (optional)
+        An integer value which defines the threshold of wavelength.
+        For example, if a band's wavelngth is 550 nm and threshold
+        is 10, then the vegetation index calculation will consider
+        550 +/- 10 nm as the input. It is suggested to use smaller
+        threshold value (or keep the default 10) while using 
+        hyperspectral images and larger values (may be 100) for 
+        multispectral images.
     bit_depth : int (optional)
         Bit depth of the image. For example, Landsat 8 images are
         14-bit. So if 14 is given as the bit_depth, then the image
@@ -33,8 +43,8 @@ class VegetationIndices():
     -------
     calculate(out_dir, featuers='all'):
         Calculate all the vegetation indices possible.
-        Allowed list of features are:
-        
+        The index list is adapted from:
+        https://www.indexdatabase.de/
 
     Raises
     ------
@@ -60,6 +70,14 @@ class VegetationIndices():
             Example:
             If list: [430, 450, 560]
             If list of lists: [[420, 440], [530, 560], [670, 690]]
+        threshold : int (optional)
+            An integer value which defines the threshold of wavelength.
+            For example, if a band's wavelngth is 550 nm and threshold
+            is 10, then the vegetation index calculation will consider
+            550 +/- 10 nm as the input. It is suggested to use smaller
+            threshold value (or keep the default 10) while using 
+            hyperspectral images and larger values (may be 100) for 
+            multispectral images.
         bit_depth : int (optional)
             Bit depth of the image. For example, Landsat 8 images are
             14-bit. So if 14 is given as the bit_depth, then the image
@@ -69,16 +87,8 @@ class VegetationIndices():
         -------
         calculate(out_dir, featuers='all'):
             Calculate all the vegetation indices possible.
-            Allowed list of features are:
-            'ARI_1', 'ARI_2', 'ARVI', 'CRI_1', 'CRI_2', 'DVI', 'EVI',
-            'GEMI', 'GARI', 'GCI', 'GDVI', 'GLI', 'GNDVI', 'GOSAVI',
-            'GRVI', 'GSAVI', 'GVI', 'IPVI', 'LCAI', 'MCARI', 'MNLI',
-            'MNDWI', 'MRENDVI', 'MRESR', 'MSR', 'MSAVI_2', 'MTVI',
-            'MSI', 'NLI', 'NBR', 'NBRT_1', 'NDBI', 'NDII', 'NDLI',
-            'NDMI', 'NDNI', 'NDSI', 'NDVI', 'NDWI', 'NMDI', 'OSAVI',
-            'PRI', 'PSRI', 'RENDVI', 'RDVI', 'SR_1', 'SAVI', 'SIPI',
-            'TCARI', 'TDVI', 'TVI', 'VARI', 'VREI_1', 'VREI_2', 'WBI',
-            'WDRVI'
+            The index list is adapted from:
+            https://www.indexdatabase.de/
 
         Raises
         ------
