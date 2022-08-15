@@ -1,3 +1,6 @@
+gdal
+rasterio
+fiona
 pyproj
 rtree
 shapely
