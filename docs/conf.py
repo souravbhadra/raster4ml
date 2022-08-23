@@ -34,8 +34,11 @@ release = '0.1.0'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode'
+    'sphinx.ext.viewcode',
+    'sphinx.ext.todo',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -58,3 +61,6 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# The master toctree document.
+master_doc = 'index'

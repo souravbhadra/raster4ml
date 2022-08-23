@@ -42,7 +42,7 @@ support by simply using the following function:
    installation
    quickstart
    tutorials/index
-   modules
+   Raster4ML API Reference <raster4ml>
 
 Indices and Tables
 ==================
