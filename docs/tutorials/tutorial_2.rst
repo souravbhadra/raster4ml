@@ -1,5 +1,5 @@
 ====================================================
-Tutorial 1: Landcover Classification using Landsat 8
+Tutorial 2: Landcover Classification using Landsat 8
 ====================================================
 
 Datasets

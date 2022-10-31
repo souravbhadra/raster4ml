@@ -285,6 +285,6 @@ refer this link_ to learn more.
     Accuracy from RFC: 1.00
 
 
-.. _repository: https://geopandas.org/en/stable/
+.. _repository: https://drive.google.com/file/d/1sFTqAObkyBZ0VjB3Gfyfbhz4KZ_XwiDs/view?usp=sharing
 .. _here: https://www.usgs.gov/faqs/what-are-band-designations-landsat-satellites
 .. _link : https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html

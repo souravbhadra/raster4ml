@@ -1,4 +1,3 @@
-gdal
 rasterio
 fiona
 pyproj

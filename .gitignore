@@ -1,6 +1,9 @@
 data/landsat/*
 data/sentinel/*
 data/worldview/*
+data/chlorophyll/*
+
+docs/tutorials/*.ipynb
 
 examples/.ipynb_checkpoints
 

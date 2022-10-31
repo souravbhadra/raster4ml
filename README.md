@@ -58,8 +58,4 @@ If these three are installed, the rest of the dependencies can be installed dire
 pip install raster4ml
 ```
 
-### Mac OS
-Has not been tested yet. 😕
-
-### Linux
-Has not been tested yet. 😕
+## Tutorials
