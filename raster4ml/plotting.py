@@ -1,8 +1,6 @@
 import os
 import rasterio
 import folium
-import ipyleaflet
-import rioxarray
 import geopandas as gpd
 import numpy as np
 import numpy.ma as ma
