@@ -1,3 +1,10 @@
+![check-status](https://img.shields.io/github/checks-status/remotesensinglab/raster4ml/master)
+![docs](https://img.shields.io/readthedocs/raster4ml)
+![license](https://img.shields.io/github/license/remotesensinglab/raster4ml)
+![downloads](https://img.shields.io/github/downloads/remotesensinglab/raster4ml/total)
+
+
+
 ![raster4ml-logo](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/docs/images/raster4ml_logo.png)
 
 When geospatial raster data is concerned in a machine learning pipeline, it is often required to extract meaningful features, such as vegetation indices (e.g., NDVI, EVI, NDRE, etc.) or textures. This package provides easy-to-use functions that can automatically calculates the features with one or several lines of codes in Python. It also has the functionality of extracting statistics based on shapefile (i.e., point or polygon) from a raster data. Any type of raster data is supported regardless of satellite or UAVs.
@@ -60,3 +67,12 @@ pip install raster4ml
 
 ## Tutorials
 There are two tutorials provided. Find them in ``docs/tutorials``.
+
+## Questions?
+Please report bugs at [https://github.com/remotesensinglab/raster4ml/issues](https://github.com/remotesensinglab/raster4ml/issues).
+
+If you are reporting a bug, please include:
+
+* Your operating system name and version.
+* Any details about your local setup that might be helpful in troubleshooting.
+* Detailed steps to reproduce the bug.
