@@ -1,7 +1,7 @@
 ![check-status](https://img.shields.io/github/checks-status/remotesensinglab/raster4ml/master)
 ![docs](https://img.shields.io/readthedocs/raster4ml)
 ![license](https://img.shields.io/github/license/remotesensinglab/raster4ml)
-![downloads](https://img.shields.io/github/downloads/remotesensinglab/raster4ml/total)
+![downloads](https://img.shields.io/pypi/dm/raster4ml)
 
 
 
