@@ -38,7 +38,7 @@ Detailed documentation with tutorials can be found here: https://raster4ml.readt
     m.add_raster(image_path='Landsat8.tif', bands=[4, 3, 2])
     ```
     Output:
-    ![map-output](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/docs/images/map_output.png)
+    ![map-output](https://raw.githubusercontent.com/souravbhadra/raster4ml/master/docs/images/tutorial_1_map_output_1.png)
 
 ## How to Install?
 ### Dependencies

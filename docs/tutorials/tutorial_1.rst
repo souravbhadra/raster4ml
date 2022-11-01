@@ -76,7 +76,7 @@ Let's visualize the image using the plotting functionality of ``raster4ml``.
     m.add_raster(image_path=os.path.join(image_dir, 'Stack.tif'), bands=[4, 3, 2])
     m
 
-.. image:: https://raw.githubusercontent.com/souravbhadra/raster4ml/master/docs/images/map_output.png
+.. image:: https://raw.githubusercontent.com/souravbhadra/raster4ml/master/docs/images/tutorial_1_map_output_1.png
         :width: 400
         :alt: Map output
 
