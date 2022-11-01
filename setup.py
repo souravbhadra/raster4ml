@@ -6,13 +6,13 @@ def read(fname):
 
 setup(
     name="raster4ml",
-    version="0.1.4b",
+    version="0.1.3",
     author="Sourav Bhadra",
     author_email='sbhadra019@gmail.com',
     description="A geospatial raster processing library for machine learning",
     long_description=read('README.md'),
     long_description_content_type="text/markdown",
-    url='https://github.com/souravbhadra/raster4ml',
+    url='https://github.com/remotesensinglab/raster4ml',
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
