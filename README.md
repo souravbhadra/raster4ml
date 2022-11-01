@@ -17,7 +17,7 @@ When geospatial raster data is concerned in a machine learning pipeline, it is o
 
 
 ## Documentation
-Detailed documentation with tutorials can be found here: https://raster4ml.readthedocs.io/en/latest/
+Detailed documentation with tutorials can be found here: https://raster4ml.readthedocs.io/
 
 ## How to Use?
 1. Stacking bands
