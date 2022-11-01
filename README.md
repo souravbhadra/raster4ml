@@ -59,3 +59,4 @@ pip install raster4ml
 ```
 
 ## Tutorials
+There are two tutorials provided. Find them in ``docs/tutorials``.

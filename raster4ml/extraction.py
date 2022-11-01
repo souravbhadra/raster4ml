@@ -130,7 +130,7 @@ def batch_extract_by_points(image_paths,
 def extract_by_polygons(image_path,
                         shape_path,
                         unique_id,
-                        statistics,
+                        statistics='all',
                         prefix=None):
     """Extract value from a raster data using a polygon shapefile.
     Similar to Zonal Statistics.
@@ -191,8 +191,8 @@ def extract_by_polygons(image_path,
         mask_img = mask_img.reshape(-1)
 
         if statistics == 'all':
-            statistics = ['mean', 'median', 'mode', 'sum', 'min',
-                          'max', 'std', 'range', 'iqr', 'unique']
+            statistics = ['mean', 'median', 'sum', 'min',
+                          'max', 'std', 'range', 'iqr', 'unique'] # removed mode
 
         # Check if all values are nan
         if np.isnan(mask_img).all():
@@ -204,8 +204,8 @@ def extract_by_polygons(image_path,
                 stats_values.append(np.mean(mask_img))
             if 'median' in statistics:
                 stats_values.append(np.median(mask_img))
-            if 'mode' in statistics:
-                stats_values.append(np.bincount(mask_img).argmax())
+            #if 'mode' in statistics:
+            #    stats_values.append(np.bincount(mask_img).argmax())
             if 'sum' in statistics:
                 stats_values.append(np.sum(mask_img))
             if 'min' in statistics:
@@ -240,7 +240,7 @@ def extract_by_polygons(image_path,
 def batch_extract_by_polygons(image_paths,
                               shape_path,
                               unique_id,
-                              statistics):
+                              statistics='all'):
     """Batch extract value by a polygon shapefile from a given image
     paths. Similar to zonal statistics.
 
@@ -279,8 +279,11 @@ def batch_extract_by_polygons(image_paths,
     image_paths = glob.glob(os.path.join(image_paths, "*.tif"))
     for image_path in tqdm(image_paths):
         prefix = os.path.basename(image_path).split('.')[0]
-        stats = extract_by_polygons(image_path, shape_path, unique_id, statistics, 
-                                           prefix=prefix,)
+        stats = extract_by_polygons(image_path,
+                                    shape_path,
+                                    unique_id,
+                                    statistics, 
+                                    prefix=prefix)
         stats_df.append(stats)
     stats_df = pd.concat(stats_df, axis=1)
 

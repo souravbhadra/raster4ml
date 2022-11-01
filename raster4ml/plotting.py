@@ -126,7 +126,10 @@ class Map(folium.folium.Map):
         img = np.moveaxis(img, 0, 2)
         img = img[:, :, bands]
         img = img.astype(np.float32)
-        img[img==0.0] = np.nan
+        if src.nodata == None:
+            img[img==0.0] = np.nan
+        else:
+            img[img==src.nodata] = np.nan
         img = ma.masked_invalid(img)
         
         # Create a RGBA image

@@ -125,7 +125,7 @@ the vegetation indices.
 
 3. Extract Values based on Sample Points
 ----------------------------------------
-Locate the sample point shapefile in the ``data/shapes`` folder. The name of the shapefile 
+Locate the sample point shapefile in the extracted data folder. The name of the shapefile 
 is ``points.shp``. We need to extract the vegetation index values underneath each point in 
 the shapefile and store those index values for Machine Learning training. The shapefile 
 also contains label information. For simplicity, it only has two distinct classes, i.e., 
