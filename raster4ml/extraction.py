@@ -92,6 +92,49 @@ def get_duplicated_columns(df):
             duplicates.append(col)
     return duplicates
 
+def extract_shape_values(shape_path, unique_id, columns='all'):
+    """Extract value from a shape data using a column or a lista of columns.
+    Similar to Zonal Statistics.
+
+    Parameters
+    ----------
+    shape_path : str
+        Path of the shapefile.
+    unique_id : str
+        A unique column in the shapefile which will be retained as
+        the id.
+    columns : str or list
+        List of columns to be extracted from the shape.
+
+    Returns
+    -------
+    pandas dataframe
+        A pandas dataframe containing all the columns and their values per
+        id.
+
+    Raises
+    ------
+    ValueError
+        The column(s) name(s) must be present at the shapefile.
+    """
+    shape = gpd.read_file(shape_path)
+    data = {}
+    if np.in1d(columns, shape.columns).all():
+        pass
+    else:
+        raise ValueError('Some column is missing.')
+    
+    # Convert shape values into a organized dataframe (per column).
+    for i, polygon in enumerate(shape['geometry']):
+        data_values = []
+        for column in columns:
+            data_values.append(shape.loc[i, column])
+        data[shape.loc[i, f'{unique_id}']] = data_values
+    data = pd.DataFrame(data).T
+    data.columns = [
+        f'{column}' for column in columns]
+    return data
+
 def batch_extract_by_points(image_paths,
                             shape_path,
                             unique_id):
