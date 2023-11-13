@@ -92,49 +92,6 @@ def get_duplicated_columns(df):
             duplicates.append(col)
     return duplicates
 
-def extract_shape_values(shape_path, unique_id, columns='all'):
-    """Extract value from a shape data using a column or a lista of columns.
-    Similar to Zonal Statistics.
-
-    Parameters
-    ----------
-    shape_path : str
-        Path of the shapefile.
-    unique_id : str
-        A unique column in the shapefile which will be retained as
-        the id.
-    columns : str or list
-        List of columns to be extracted from the shape.
-
-    Returns
-    -------
-    pandas dataframe
-        A pandas dataframe containing all the columns and their values per
-        id.
-
-    Raises
-    ------
-    ValueError
-        The column(s) name(s) must be present at the shapefile.
-    """
-    shape = gpd.read_file(shape_path)
-    data = {}
-    if np.in1d(columns, shape.columns).all():
-        pass
-    else:
-        raise ValueError('Some column is missing.')
-    
-    # Convert shape values into a organized dataframe (per column).
-    for i, polygon in enumerate(shape['geometry']):
-        data_values = []
-        for column in columns:
-            data_values.append(shape.loc[i, column])
-        data[shape.loc[i, f'{unique_id}']] = data_values
-    data = pd.DataFrame(data).T
-    data.columns = [
-        f'{column}' for column in columns]
-    return data
-
 def batch_extract_by_points(image_paths,
                             shape_path,
                             unique_id):
@@ -169,6 +126,46 @@ def batch_extract_by_points(image_paths,
         print(f'{len(cols_to_remove)} columns were removed from the dataframe as they had duplicated values.')
     return pixel_values_df
 
+
+def extract_shape_values(shape_path, unique_id, columns='all'):
+    """Extract value from a shape data using a column or a lista of columns.
+    Similar to Zonal Statistics.
+    Parameters
+    ----------
+    shape_path : str
+        Path of the shapefile.
+    unique_id : str
+        A unique column in the shapefile which will be retained as
+        the id.
+    columns : str or list
+        List of columns to be extracted from the shape.
+    Returns
+    -------
+    pandas dataframe
+        A pandas dataframe containing all the columns and their values per
+        id.
+    Raises
+    ------
+    ValueError
+        The column(s) name(s) must be present at the shapefile.
+    """
+    shape = gpd.read_file(shape_path)
+    data = {}
+    if np.in1d(columns, shape.columns).all():
+        pass
+    else:
+        raise ValueError('Some column is missing.')
+
+    # Convert shape values into a organized dataframe (per column).
+    for i, polygon in enumerate(shape['geometry']):
+        data_values = []
+        for column in columns:
+            data_values.append(shape.loc[i, column])
+        data[shape.loc[i, f'{unique_id}']] = data_values
+    data = pd.DataFrame(data).T
+    data.columns = [
+        f'{column}' for column in columns]
+    return data
 
 def extract_by_polygons(image_path,
                         shape_path,
@@ -264,7 +261,12 @@ def extract_by_polygons(image_path,
                     *np.percentile(mask_img, [75, 25])))
             if 'unique' in statistics:
                 stats_values.append(np.unique(mask_img).shape[0])
+        print(shape.index.dtype)
 
+        print('i', i)
+        print(f'{unique_id}')
+
+        print(stats[shape.loc[i, f'{unique_id}']])
         stats[shape.loc[i, f'{unique_id}']] = stats_values
 
     stats = pd.DataFrame(stats).T
@@ -279,6 +281,136 @@ def extract_by_polygons(image_path,
 
     return stats
 
+def batch_extract_by_non_black_pixels(image_paths, segment,
+                              statistics='all'):
+    """Batch extract value by a polygon shapefile from a given image
+    paths. Similar to zonal statistics.
+
+    Parameters
+    ----------
+    image_paths : list
+        List of image paths.
+    shape_path : str
+        Path of the shapefile.
+    unique_id : str
+        A unique column in the shapefile which will be retained as
+        the id.
+    statistics : str or list
+        List of statistics to be calculated if shape is polygon.
+        Accepted statsitcs are either 'all' or a list containing 
+        follwoing statistics:
+        'mean', 'median', 'mode', 'sum', 'min', 'max', 'std', 'range',
+        'iqr', 'unique'.
+        If only one statistic to be calculated, that should be inside
+        a list. For example, if only 'mean' is to be calculated, it
+        should be given as ['mean'].
+    prefix : str, optional
+        If predix is given, then the prefix will be used in front of
+        the statistics name within the final dataframe column,
+        by default None 
+
+    Returns
+    -------
+    pandas dataframe
+        A pandas dataframe containing all the statistics values per
+        id. Each column name will be made through automatically adding
+        a prefix (which is the filename of each image) and the
+        corresponding statistics.
+    """
+    stats_df = []
+    image_paths = glob.glob(os.path.join(image_paths, "*.tif"))
+    for image_path in tqdm(image_paths):
+        prefix = os.path.basename(image_path).split('.')[0]
+        stats = extract_by_non_black_pixels(image_path,
+                                            segment,
+                                            statistics, 
+                                            prefix=prefix)
+        stats_df.append(stats)
+        
+    stats_df = pd.concat(stats_df, axis=1)
+
+    # Check if there are duplicate columns
+    #cols_to_remove = get_duplicated_columns(stats_df)
+    #if len(cols_to_remove) > 0:
+    #    stats_df = stats_df.drop(columns=cols_to_remove)
+    #    print(f'{len(cols_to_remove)} columns were removed from the dataframe as they had duplicated values.')
+    return stats_df
+
+def extract_by_non_black_pixels(image_path, segment, statistics='all', prefix=None):
+    """Extract value from a raster data, excluding the black area.
+
+    Parameters
+    ----------
+    image_path : str
+        Path of the image.
+    statistics : str or list
+        List of statistics to be calculated if shape is polygon.
+        Accepted statsitcs are either 'all' or a list containing 
+        follwoing statistics:
+        'mean', 'median', 'mode', 'sum', 'min', 'max', 'std', 'range',
+        'iqr', 'unique'.
+        If only one statistic to be calculated, that should be inside
+        a list. For example, if only 'mean' is to be calculated, it
+        should be given as ['mean'].
+    prefix : str, optional
+        If predix is given, then the prefix will be used in front of
+        the statistics name within the final dataframe column,
+        by default None
+    """
+    src = rasterio.open(image_path)
+    
+    data = src.read()
+
+    # Define the mask as a boolean array where black pixels are False
+    mask_arr = np.sum(data, axis=0) > 0
+
+    # Apply the mask to the dataset
+    mask_img = np.where(mask_arr, data, np.nan)
+    stats = {}
+    if statistics == 'all': 
+        statistics = ['mean', 'median', 'sum', 'min',
+                            'max', 'std', 'range', 'iqr', 'unique'] # removed mode
+
+    # Check if all values are nan
+    if np.isnan(mask_img).all():
+        stats_values = [np.nan]*len(statistics)
+        
+    else:
+        mask_img = mask_img[~np.isnan(mask_img)]
+        stats_values = []
+        if 'mean' in statistics:
+            stats_values.append(np.mean(mask_img))
+        if 'median' in statistics:
+            stats_values.append(np.median(mask_img))
+        #if 'mode' in statistics:
+        #    stats_values.append(np.bincount(mask_img).argmax())
+        if 'sum' in statistics:
+            stats_values.append(np.sum(mask_img))
+        if 'min' in statistics:
+            stats_values.append(np.min(mask_img))
+        if 'max' in statistics:
+            stats_values.append(np.max(mask_img))
+        if 'std' in statistics:
+            stats_values.append(np.std(mask_img))
+        if 'range' in statistics:
+            stats_values.append(np.max(mask_img)-np.min(mask_img))
+        if 'iqr' in statistics:
+            stats_values.append(np.subtract(
+                *np.percentile(mask_img, [75, 25])))
+        if 'unique' in statistics:
+            stats_values.append(np.unique(mask_img).shape[0])
+    
+    stats[str(segment)] = stats_values
+    stats = pd.DataFrame(stats).T
+    if prefix is None:
+        stats.columns = statistics
+    else:
+        stats.columns = [
+            f'{str(prefix)}_{statistic}' for statistic in statistics]
+
+    # Close rasterio
+    src.close()
+    return stats
 
 def batch_extract_by_polygons(image_paths,
                               shape_path,
@@ -328,6 +460,7 @@ def batch_extract_by_polygons(image_paths,
                                     statistics, 
                                     prefix=prefix)
         stats_df.append(stats)
+        
     stats_df = pd.concat(stats_df, axis=1)
 
     # Check if there are duplicate columns
